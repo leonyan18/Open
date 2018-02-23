@@ -68,7 +68,6 @@ public class PersonMange extends AppCompatActivity{
                   //删除事件的方法
                 Log.d("id", "onContextItemSelected: "+info.id);
                 persondata.remove(id);
-                adapter.notifyDataSetChanged();
                 listView.setAdapter(adapter);
                 return true;
             default:
