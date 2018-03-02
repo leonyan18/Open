@@ -41,19 +41,15 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
-        android:layout_height="51dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="8dp"
-        android:background="#ffffff"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_height="45dp"
+        android:background="#ffffff">
 
         <ImageView
             android:id="@+id/user_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="42dp"
+            android:layout_height="match_parent"
             android:adjustViewBounds="true"
-            app:srcCompat="@drawable/person" />
+            app:srcCompat="@drawable/account" />
 
         <TextView
             android:id="@+id/user_name"
@@ -79,13 +75,14 @@
 
     <LinearLayout
         android:id="@+id/linearLayout3"
-        android:layout_width="match_parent"
-        android:layout_height="401dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="8dp"
+        android:layout_width="386dp"
+        android:layout_height="410dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="4dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
         <Button
             android:id="@+id/mange"

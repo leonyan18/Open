@@ -1,5 +1,6 @@
 package com.example.yan.open;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,9 +15,23 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 
 /**
  * Created by yan on 2018/2/1.
@@ -32,7 +47,7 @@ public class PersonMange extends AppCompatActivity{
         FloatingActionButton button_add=findViewById(R.id.add_person);
         listView=findViewById(R.id.personlist);
         persondata.add("father");
-        persondata.add("mother");
+        initperson();
         adapter=new ArrayAdapter<String>(PersonMange.this,android.R.layout.simple_list_item_1,persondata);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -60,30 +75,50 @@ public class PersonMange extends AppCompatActivity{
     }
     public boolean onContextItemSelected(MenuItem item) {
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        //info.id得到listview中选择的条目绑定的id
-        String id = String.valueOf(info.id);
         switch (item.getItemId()) {
-            case 1:
-                //System.out.println("删除"+info.id);
-                  //删除事件的方法
-                Log.d("id", "onContextItemSelected: "+info.id);
-                persondata.remove(id);
+            default:
+                Log.d("id121", "onContextItemSelected: "+info.id);
+                persondata.remove((int )info.id);
                 listView.setAdapter(adapter);
                 return true;
-            default:
-                return super.onContextItemSelected(item);
         }
     }
     @Override
     protected void onActivityResult(int requestCode,int resultCode,Intent data){
         switch (requestCode){
             case 1:
-                if(resultCode==RESULT_OK){
+                if(data!=null&&data.getBooleanExtra("or",false)){
                     persondata.add(data.getStringExtra("newperson"));
                     listView.setAdapter(adapter);
+                    Toast.makeText(PersonMange.this,"上传成功",Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:break;
         }
+    }
+    private  void initperson(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client=new OkHttpClient();
+                Request request=new Request.Builder()
+                        .url("http://192.168.2.187:8080/docs/person.json")
+                        .build();
+                try {
+                    Response response=client.newCall(request).execute();
+                    String data=response.body().string();
+                    JSONArray jsonArray=new JSONArray(data);
+                    for (int i=0;i<jsonArray.length();i++){
+                        JSONObject jsonObject=jsonArray.getJSONObject(i);
+                        String name=jsonObject.getString("name");
+                        persondata.add(name);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }).start();
     }
 }

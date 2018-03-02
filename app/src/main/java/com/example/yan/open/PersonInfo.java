@@ -27,6 +27,11 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -48,44 +53,57 @@ public class PersonInfo extends AppCompatActivity {
     private  EditText text;
     private ImageView imageView;
     private String name=null;
+    private Intent intent;
     public void setName(String name){
         this.name=name;
     }
     public void upload(){
-        {
-            OkHttpClient client = new OkHttpClient();//创建OkHttpClient对象。
-            File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
-            File file = new File(appDir,name+".jpg");
-            MultipartBody body = new MultipartBody.Builder("AaB03x")
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("file", null, new MultipartBody.Builder("BbC04y")
-                            .addPart(Headers.of("Content-Disposition", "form-data; name=\"file\"; filename=\""+name+".jpg\""),
-                                    RequestBody.create(MediaType.parse("image/jpg"),file))
-                            .build())
-                    .build();
-            Request request = new Request.Builder()
-                    .url("http://120.79.181.75:8080/untitled1_war/UploadFileServlet")
-                    .post(body)
-                    .build();
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    Log.d("onFailure", call.toString());
-                    Toast.makeText(PersonInfo.this,"上传失败",Toast.LENGTH_SHORT).show();
-                }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client =client = new OkHttpClient.Builder()
+                        .connectTimeout(4, TimeUnit.SECONDS)
+                        .readTimeout(20, TimeUnit.SECONDS)
+                        .build();  //创建OkHttpClient对象。
+                File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
+                File file = new File(appDir,name+".jpg");
+                MultipartBody body = new MultipartBody.Builder("AaB03x")
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("file", null, new MultipartBody.Builder("BbC04y")
+                                .addPart(Headers.of("Content-Disposition", "form-data; name=\"file\"; filename=\""+name+".jpg\""),
+                                        RequestBody.create(MediaType.parse("image/jpg"),file))
+                                .build())
+                        .build();
+                Request request = new Request.Builder()
+                        .url("http://192.168.2.187:8080/my/UploadFileServlet")
+                        .post(body)
+                        .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        if(e.getCause().equals(SocketTimeoutException.class))
+                        {
+                            Toast.makeText(PersonInfo.this, "上传失败", Toast.LENGTH_SHORT).show();
+                            intent.putExtra("or", false);
+                        }
+                    }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    Log.d("onResponse", response.body().string());
-                }
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        intent.putExtra("or",true);
+                        finish();
+                    }
 
-            });
-        }
+                });
+            }
+        }).start();
     }
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.info);
+        intent=new Intent();
+        intent.putExtra("or",false);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         builder.detectFileUriExposure();
@@ -106,6 +124,12 @@ public class PersonInfo extends AppCompatActivity {
         Button saveButton=findViewById(R.id.save);
         imageView=findViewById(R.id.perface);
         text=findViewById(R.id.name);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                getUrlImage("http://www.nowamagic.net/librarys/images/random/rand_11.jpg");
+            }
+        }).start();
         takeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -115,11 +139,9 @@ public class PersonInfo extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent();
                 intent.putExtra("newperson",text.getText().toString());
                 setResult(RESULT_OK,intent);
                 upload();
-                finish();
             }
         });
         Intent intent=getIntent();
@@ -194,13 +216,31 @@ public class PersonInfo extends AppCompatActivity {
                         m.postRotate(90);
                         Bitmap newbitmap=Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
                         imageView.setImageBitmap(newbitmap);
-                       name=text.getText().toString();
+                        name=text.getText().toString();
                     }catch (FileNotFoundException e){
                         e.printStackTrace();
                     }
                 }
                 break;
             default:break;
+        }
+    }
+    public void getUrlImage(String url) {
+        Bitmap img = null;
+        try {
+            URL picurl = new URL(url);
+            // 获得连接
+            HttpURLConnection conn = (HttpURLConnection)picurl.openConnection();
+            conn.setConnectTimeout(6000);//设置超时
+            conn.setDoInput(true);
+            conn.setUseCaches(false);//不缓存
+            conn.connect();
+            InputStream is = conn.getInputStream();//获得图片的数据流
+            img = BitmapFactory.decodeStream(is);
+            imageView.setImageBitmap(img);
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

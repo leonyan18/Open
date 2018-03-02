@@ -16,6 +16,7 @@ public class PersonWindow extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.personwindow);
         ImageButton imageButton=findViewById(R.id.door);
+        ImageButton toinfo=findViewById(R.id.toinfo);
         Button button_exit=findViewById(R.id.exit);
         Button button_mange=findViewById(R.id.mange);
         button_exit.setOnClickListener(new View.OnClickListener() {
@@ -38,6 +39,13 @@ public class PersonWindow extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(PersonWindow.this,PersonMange.class);
+                startActivity(intent);
+            }
+        });
+        toinfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent=new Intent(PersonWindow.this,Userinfo.class);
                 startActivity(intent);
             }
         });
