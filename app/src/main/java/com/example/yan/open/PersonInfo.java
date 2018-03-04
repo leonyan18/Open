@@ -1,11 +1,14 @@
 package com.example.yan.open;
 
 import android.Manifest;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.media.ExifInterface;
+import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,18 +22,28 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.guo.android_extend.image.ImageConverter;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -52,8 +65,19 @@ public class PersonInfo extends AppCompatActivity {
     private Uri imageuri;
     private  EditText text;
     private ImageView imageView;
-    private String name=null;
+    private String name=null,data;
     private Intent intent;
+    private CheckBox checkBox1L,checkBox2S;
+    private Button dbutton;
+    private File outputimage;
+    private LoadingAlertDialog dialog;
+    private DatePickerDialog.OnDateSetListener mdateListener = new DatePickerDialog.OnDateSetListener() {
+
+        @Override
+        public void onDateSet(DatePicker view, int years, int monthOfYear, int dayOfMonth) {
+            dbutton.setText(years+"年"+(monthOfYear+1)+"月"+dayOfMonth+"日");
+        }
+    };
     public void setName(String name){
         this.name=name;
     }
@@ -69,34 +93,32 @@ public class PersonInfo extends AppCompatActivity {
                 File file = new File(appDir,name+".jpg");
                 MultipartBody body = new MultipartBody.Builder("AaB03x")
                         .setType(MultipartBody.FORM)
-                        .addFormDataPart("file", null, new MultipartBody.Builder("BbC04y")
-                                .addPart(Headers.of("Content-Disposition", "form-data; name=\"file\"; filename=\""+name+".jpg\""),
+                        .addPart(Headers.of("Content-Disposition", "form-data; name=\"file\"; filename=\""+name+".jpg\""),
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
-                                .build())
                         .build();
                 Request request = new Request.Builder()
-                        .url("http://192.168.2.187:8080/my/UploadFileServlet")
+                        .url("http://192.168.0.110:8888/UpLoadFile")
                         .post(body)
                         .build();
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
-                        if(e.getCause().equals(SocketTimeoutException.class))
-                        {
-                            Toast.makeText(PersonInfo.this, "上传失败", Toast.LENGTH_SHORT).show();
-                            intent.putExtra("or", false);
-                        }
+                        Log.d("onFailure", e.toString());
+                        dialog.dismiss();
                     }
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         intent.putExtra("or",true);
+                        Log.d("onResponse", response.body().string());
                         finish();
                     }
 
                 });
             }
         }).start();
+        dialog = new LoadingAlertDialog(PersonInfo.this);
+        dialog.show("上传中...");
     }
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -104,9 +126,9 @@ public class PersonInfo extends AppCompatActivity {
         setContentView(R.layout.info);
         intent=new Intent();
         intent.putExtra("or",false);
-        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-        StrictMode.setVmPolicy(builder.build());
-        builder.detectFileUriExposure();
+//        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+//        StrictMode.setVmPolicy(builder.build());
+//        builder.detectFileUriExposure();
         if(Build.VERSION.SDK_INT>=23){
             //判断是否有这个权限
             if(ContextCompat.checkSelfPermission(PersonInfo.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED||ContextCompat.checkSelfPermission(PersonInfo.this, Manifest.permission.INTERNET)!=PackageManager.PERMISSION_GRANTED){
@@ -116,14 +138,58 @@ public class PersonInfo extends AppCompatActivity {
                         Manifest.permission.INTERNET)){
                 }else {
                     //2、申请权限: 参数二：权限的数组；参数三：请求码
-                    ActivityCompat.requestPermissions(PersonInfo.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET},1);
+                    ActivityCompat.requestPermissions(PersonInfo.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET,Manifest.permission.CAMERA},1);
                 }
             }
         }
         Button takeButton=findViewById(R.id.uploading);
         Button saveButton=findViewById(R.id.save);
+        checkBox1L=findViewById(R.id.always);
+        checkBox2S=findViewById(R.id.shtime);
+        checkBox1L.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(checkBox2S.isChecked()){
+                    checkBox2S.setChecked(false);
+                }
+            }
+        });
+        checkBox2S.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(checkBox1L.isChecked()){
+                    checkBox1L.setChecked(false);
+                }
+            }
+        });
         imageView=findViewById(R.id.perface);
         text=findViewById(R.id.name);
+        dbutton=findViewById(R.id.dbutton);
+        dbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            URL url = null;//取得资源对象
+                            url = new URL("http://www.baidu.com");
+                            URLConnection uc = url.openConnection();//生成连接对象
+                            uc.connect(); //发出连接
+                            long ld = uc.getDate();
+                            Calendar calendar=Calendar.getInstance();
+                            calendar.setTimeInMillis(ld);
+                            showDate(calendar);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();//没有同步
+                Calendar calendar=Calendar.getInstance();
+                showDate(calendar);
+            }
+        });
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -145,14 +211,14 @@ public class PersonInfo extends AppCompatActivity {
             }
         });
         Intent intent=getIntent();
-        String data=intent.getStringExtra("data");
+        data=intent.getStringExtra("data");
         if(!data.equals("no")){
             text.setText(data);
             File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
             if (!appDir.exists()) {
                 appDir.mkdir();
             }
-            File outputimage = new File(appDir,data+".jpg");
+            outputimage = new File(appDir,data+".jpg");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 imageuri = FileProvider.getUriForFile(PersonInfo.this, "com.example.yan.open.fileprovider", outputimage);
                 intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -172,14 +238,40 @@ public class PersonInfo extends AppCompatActivity {
             }
         }
     }
-
+    public static File getFileFromBytes(byte[] b, File file) {
+        BufferedOutputStream stream = null;
+        try {
+            FileOutputStream fstream = new FileOutputStream(file);
+            stream = new BufferedOutputStream(fstream);
+            stream.write(b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        return file;
+    }
+    private void showDate(Calendar calendar){
+        int year = calendar.get(Calendar.YEAR);//当前年
+        int month = calendar.get(Calendar.MONTH);//当前月
+        int day = calendar.get(Calendar.DAY_OF_MONTH);//当前日
+        DatePickerDialog dialog = new DatePickerDialog(this, mdateListener, year, month, day);
+        dialog.show();
+    }
     protected void takePic(){
         if(!text.getText().toString().equals("")){
             File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
             if (!appDir.exists()) {
                 appDir.mkdir();
             }
-            File outputimage = new File(appDir,text.getText()+".jpg");
+            name=text.getText().toString();
+            outputimage = new File(appDir,name+".jpg");
             if(outputimage.exists()){
                 outputimage.delete();
             }
@@ -205,21 +297,75 @@ public class PersonInfo extends AppCompatActivity {
             Toast.makeText(PersonInfo.this,"请输入名字",Toast.LENGTH_SHORT).show();
         }
     }
+    /**
+     * 读取照片旋转角度
+     *
+     * @param path 照片路径
+     * @return 角度
+     */
+    public  int readPictureDegree(String path) {
+        int degree = 0;
+        try {
+            ExifInterface exifInterface = new ExifInterface(path);
+            int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+            switch (orientation) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    degree = 90;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    degree = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    degree = 270;
+                    break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return degree;
+    }
+
+    /**
+     * 旋转图片
+     * @param angle 被旋转角度
+     * @param bitmap 图片对象
+     * @return 旋转后的图片
+     */
+    public static Bitmap rotaingImageView(int angle, Bitmap bitmap) {
+        Bitmap returnBm = null;
+        // 根据旋转角度，生成旋转矩阵
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        try {
+            // 将原始图片按照旋转矩阵进行旋转，并得到新的图片
+            returnBm = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        } catch (OutOfMemoryError e) {
+        }
+        if (returnBm == null) {
+            returnBm = bitmap;
+        }
+        if (bitmap != returnBm) {
+            bitmap.recycle();
+        }
+        return returnBm;
+    }
     @Override
     protected void onActivityResult(int requestCode,int resultCode,Intent data){
         switch (requestCode){
             case take_photo:
                 if(resultCode==RESULT_OK){
-                    try{
-                        Bitmap bitmap= BitmapFactory.decodeStream(getContentResolver().openInputStream(imageuri));
-                        Matrix m = new Matrix();
-                        m.postRotate(90);
-                        Bitmap newbitmap=Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
+                        Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name+".jpg"),getSmallBitmap(outputimage,800,400));
                         imageView.setImageBitmap(newbitmap);
-                        name=text.getText().toString();
-                    }catch (FileNotFoundException e){
-                        e.printStackTrace();
+                        compressImage(newbitmap);
+                    byte[] data1 = new byte[newbitmap.getWidth() * newbitmap.getHeight() * 3 / 2];
+                    Log.d("data rect", newbitmap.getWidth()+"      "+newbitmap.getHeight());
+                    ImageConverter convert = new ImageConverter();
+                    convert.initial(newbitmap.getWidth(), newbitmap.getHeight(), ImageConverter.CP_PAF_NV21);
+                    if (convert.convert(newbitmap, data1)) {
+                        Log.d("", "convert ok!");
                     }
+                    convert.destroy();
+                    getFileFromBytes(data1,outputimage);
                 }
                 break;
             default:break;
@@ -241,6 +387,67 @@ public class PersonInfo extends AppCompatActivity {
             is.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    public Bitmap getSmallBitmap(File file, int reqWidth, int reqHeight) {
+        try {
+            String filePath = file.getAbsolutePath();
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;//开始读入图片，此时把options.inJustDecodeBounds 设回true了
+            BitmapFactory.decodeFile(filePath, options);//此时返回bm为空
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);//设置缩放比例
+            options.inJustDecodeBounds = false;//重新读入图片，注意此时把options.inJustDecodeBounds 设回false了
+            Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
+            //压缩好比例大小后不进行质量压缩
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputimage));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到bos中
+            //压缩好比例大小后再进行质量压缩
+            compressImage(bitmap);
+            return bitmap;
+        } catch (Exception e) {
+            Log.d("wzc", "类:" + this.getClass().getName() + " 方法：" + Thread.currentThread()
+                    .getStackTrace()[0].getMethodName() + " 异常 " + e);
+            return null;
+        }
+    }
+    public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        try {
+            int height = options.outHeight;
+            int width = options.outWidth;
+            int inSampleSize = 1;  //1表示不缩放
+            if (height > reqHeight || width > reqWidth) {
+                int heightRatio = Math.round((float) height / (float) reqHeight);
+                int widthRatio = Math.round((float) width / (float) reqWidth);
+                inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            }
+            return inSampleSize;
+        } catch (Exception e) {
+            Log.d("wzc", "类:" + this.getClass().getName() + " 方法：" + Thread.currentThread()
+                    .getStackTrace()[0].getMethodName() + " 异常 " + e);
+            return 1;
+        }
+    }
+    private Bitmap compressImage(Bitmap image) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+            int options = 100;
+            while (baos.toByteArray().length / 1024 > 100) {    //循环判断如果压缩后图片是否大于100kb,大于继续压缩
+                baos.reset();//重置baos即清空baos
+                options -= 10;//每次都减少10
+                image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
+
+            }
+            //压缩好后写入文件中
+            FileOutputStream fos = new FileOutputStream(outputimage);
+            Log.d("path", imageuri.getPath());
+            fos.write(baos.toByteArray());
+            fos.flush();
+            fos.close();
+            return image;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
