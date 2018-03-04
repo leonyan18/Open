@@ -43,6 +43,7 @@ public class PersonWindow extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent=new Intent(PersonWindow.this,DoorControl.class);
                 startActivity(intent);
+                finish();
             }
         });
         ch_user=findViewById(R.id.chuser);ch_user.setOnClickListener(new View.OnClickListener() {

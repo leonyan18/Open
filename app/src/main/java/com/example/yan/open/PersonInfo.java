@@ -105,6 +105,13 @@ public class PersonInfo extends AppCompatActivity {
                     public void onFailure(Call call, IOException e) {
                         Log.d("onFailure", e.toString());
                         dialog.dismiss();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MyApplication.getContext(),"连接超时请检查网络",Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
                     }
 
                     @Override
@@ -120,6 +127,7 @@ public class PersonInfo extends AppCompatActivity {
         dialog = new LoadingAlertDialog(PersonInfo.this);
         dialog.show("上传中...");
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -357,15 +365,8 @@ public class PersonInfo extends AppCompatActivity {
                         Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name+".jpg"),getSmallBitmap(outputimage,800,400));
                         imageView.setImageBitmap(newbitmap);
                         compressImage(newbitmap);
-                    byte[] data1 = new byte[newbitmap.getWidth() * newbitmap.getHeight() * 3 / 2];
-                    Log.d("data rect", newbitmap.getWidth()+"      "+newbitmap.getHeight());
-                    ImageConverter convert = new ImageConverter();
-                    convert.initial(newbitmap.getWidth(), newbitmap.getHeight(), ImageConverter.CP_PAF_NV21);
-                    if (convert.convert(newbitmap, data1)) {
-                        Log.d("", "convert ok!");
-                    }
-                    convert.destroy();
-                    getFileFromBytes(data1,outputimage);
+                        String string=FaceHelper.facefind(newbitmap);
+                        Toast.makeText(MyApplication.getContext(),string+"",Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:break;
