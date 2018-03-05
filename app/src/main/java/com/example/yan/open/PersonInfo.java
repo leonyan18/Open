@@ -71,6 +71,7 @@ public class PersonInfo extends AppCompatActivity {
     private Button dbutton;
     private File outputimage;
     private LoadingAlertDialog dialog;
+    private boolean uppermission;
     private DatePickerDialog.OnDateSetListener mdateListener = new DatePickerDialog.OnDateSetListener() {
 
         @Override
@@ -215,7 +216,11 @@ public class PersonInfo extends AppCompatActivity {
             public void onClick(View view) {
                 intent.putExtra("newperson",text.getText().toString());
                 setResult(RESULT_OK,intent);
+                if(uppermission)
                 upload();
+                else{
+                    Toast.makeText(MyApplication.getContext(),"请上传一张有效照片",Toast.LENGTH_SHORT).show();
+                }
             }
         });
         Intent intent=getIntent();
@@ -273,6 +278,7 @@ public class PersonInfo extends AppCompatActivity {
         dialog.show();
     }
     protected void takePic(){
+        uppermission=false;
         if(!text.getText().toString().equals("")){
             File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
             if (!appDir.exists()) {
@@ -367,6 +373,9 @@ public class PersonInfo extends AppCompatActivity {
                         compressImage(newbitmap);
                         String string=FaceHelper.facefind(newbitmap);
                         Toast.makeText(MyApplication.getContext(),string+"",Toast.LENGTH_SHORT).show();
+                        if(string.equals("检测到人脸")){
+                            uppermission=true;
+                        }
                 }
                 break;
             default:break;

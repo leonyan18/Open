@@ -25,7 +25,7 @@
         android:id="@+id/regist"
         android:layout_width="288dp"
         android:layout_height="48dp"
-        android:layout_marginBottom="152dp"
+        android:layout_marginBottom="116dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:background="#2187EB"
@@ -34,7 +34,6 @@
         android:textSize="36px"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.507"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
@@ -137,8 +136,8 @@
     <android.support.constraint.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="391dp"
-        android:layout_height="218dp"
-        android:layout_marginBottom="24dp"
+        android:layout_height="245dp"
+        android:layout_marginBottom="12dp"
         android:background="#2187EB"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout7"
         app:layout_constraintStart_toStartOf="parent">

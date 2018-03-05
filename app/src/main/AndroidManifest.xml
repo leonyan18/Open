@@ -35,11 +35,6 @@
             >
         </activity>
         <activity
-            android:name=".Userinfo"
-            android:label="个人信息"
-            >
-        </activity>
-        <activity
             android:name=".PersonInfo"
             android:label="@string/personmange"
             >

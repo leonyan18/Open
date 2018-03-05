@@ -104,20 +104,6 @@ public class PersonMange extends AppCompatActivity{
                 Request request=new Request.Builder()
                         .url("http://192.168.2.187:8080/docs/person.json")
                         .build();
-                try {
-                    Response response=client.newCall(request).execute();
-                    String data=response.body().string();
-                    JSONArray jsonArray=new JSONArray(data);
-                    for (int i=0;i<jsonArray.length();i++){
-                        JSONObject jsonObject=jsonArray.getJSONObject(i);
-                        String name=jsonObject.getString("name");
-                        persondata.add(name);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-
             }
         }).start();
     }

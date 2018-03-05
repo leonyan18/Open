@@ -25,8 +25,6 @@ public class LoadingAlertDialog extends AlertDialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_loading_layout);
-
-        //点击imageview外侧区域，动画不会消失
         setCanceledOnTouchOutside(false);
 
         mBar = (ProgressBar) findViewById(R.id.bar);

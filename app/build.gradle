@@ -34,4 +34,6 @@ dependencies {
     compile files('libs/ageestimation.jar')
     compile files('libs/genderestimation.jar')
     compile 'com.guo.android_extend:android-extend:1.0.1'
+    compile  'com.zwh:RxFingerPrinter:1.1.0'
+    implementation 'com.android.support:cardview-v7:26.1.0'
 }
