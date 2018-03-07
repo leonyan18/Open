@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.media.FaceDetector;
@@ -19,8 +20,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
@@ -63,15 +66,15 @@ import okhttp3.Response;
 public class PersonInfo extends AppCompatActivity {
     public static final int take_photo=1;
     private Uri imageuri;
-    private  EditText text;
+    private  EditText name,phone;
     private ImageView imageView;
-    private String name=null,data;
+    private String data;
     private Intent intent;
     private CheckBox checkBox1L,checkBox2S;
     private Button dbutton;
     private File outputimage;
     private LoadingAlertDialog dialog;
-    private boolean uppermission;
+    private boolean goodpic;
     private DatePickerDialog.OnDateSetListener mdateListener = new DatePickerDialog.OnDateSetListener() {
 
         @Override
@@ -80,9 +83,11 @@ public class PersonInfo extends AppCompatActivity {
         }
     };
     public void setName(String name){
-        this.name=name;
+        this.name.setText(name);
     }
     public void upload(){
+        dialog = new LoadingAlertDialog(PersonInfo.this);
+        dialog.show("上传中...");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -91,14 +96,18 @@ public class PersonInfo extends AppCompatActivity {
                         .readTimeout(20, TimeUnit.SECONDS)
                         .build();  //创建OkHttpClient对象。
                 File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
-                File file = new File(appDir,name+".jpg");
-                MultipartBody body = new MultipartBody.Builder("AaB03x")
+                File file = new File(appDir,name.getText()+".jpg");
+                RequestBody  body = new MultipartBody.Builder("AaB03x")
                         .setType(MultipartBody.FORM)
-                        .addPart(Headers.of("Content-Disposition", "form-data; name=\"file\"; filename=\""+name+".jpg\""),
+                        .addPart(Headers.of("Content-Disposition", "form-data; name=\"image\"; filename=\""+name.getText()+".jpg\""),
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
+                        .addFormDataPart("phone", phone.getText().toString())
+                        .addFormDataPart("日期",dbutton.getText().toString())
+                        .addFormDataPart("name",name.getText().toString())
+                        .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
                         .build();
                 Request request = new Request.Builder()
-                        .url("http://192.168.0.110:8888/UpLoadFile")
+                        .url("http://192.168.0.122:8080/api/upload")
                         .post(body)
                         .build();
                 client.newCall(request).enqueue(new Callback() {
@@ -125,19 +134,30 @@ public class PersonInfo extends AppCompatActivity {
                 });
             }
         }).start();
-        dialog = new LoadingAlertDialog(PersonInfo.this);
-        dialog.show("上传中...");
     }
-
+    private Boolean check(){
+        if(goodpic&&name.getText().equals("")&&phone.getText().equals("")){
+            if(checkBox1L.isChecked()){
+                return true;
+            }
+            else if(checkBox2S.isChecked()&&!dbutton.getText().equals("日期选择")){
+                return true;
+            }
+            return false;
+        }
+        else
+            return false;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.info);
         intent=new Intent();
         intent.putExtra("or",false);
-//        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-//        StrictMode.setVmPolicy(builder.build());
-//        builder.detectFileUriExposure();
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        builder.detectFileUriExposure();
         if(Build.VERSION.SDK_INT>=23){
             //判断是否有这个权限
             if(ContextCompat.checkSelfPermission(PersonInfo.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED||ContextCompat.checkSelfPermission(PersonInfo.this, Manifest.permission.INTERNET)!=PackageManager.PERMISSION_GRANTED){
@@ -151,8 +171,22 @@ public class PersonInfo extends AppCompatActivity {
                 }
             }
         }
+        Toolbar toolbar=findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle(" ");
+        toolbar.setNavigationIcon(R.drawable.arrow_left);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onBackPressed();
+            }
+        });
         Button takeButton=findViewById(R.id.uploading);
         Button saveButton=findViewById(R.id.save);
+        imageView=findViewById(R.id.perface);
+        name=findViewById(R.id.name);
+        phone=findViewById(R.id.phone);
+        dbutton=findViewById(R.id.dbutton);
         checkBox1L=findViewById(R.id.always);
         checkBox2S=findViewById(R.id.shtime);
         checkBox1L.setOnClickListener(new View.OnClickListener() {
@@ -160,6 +194,10 @@ public class PersonInfo extends AppCompatActivity {
             public void onClick(View v) {
                 if(checkBox2S.isChecked()){
                     checkBox2S.setChecked(false);
+                }
+                if(checkBox1L.isChecked()){
+                    dbutton.setText("---");
+                    dbutton.setClickable(false);
                 }
             }
         });
@@ -169,11 +207,12 @@ public class PersonInfo extends AppCompatActivity {
                 if(checkBox1L.isChecked()){
                     checkBox1L.setChecked(false);
                 }
+                if(checkBox2S.isChecked()){
+                    dbutton.setText("日期选择");
+                    dbutton.setClickable(true);
+                }
             }
         });
-        imageView=findViewById(R.id.perface);
-        text=findViewById(R.id.name);
-        dbutton=findViewById(R.id.dbutton);
         dbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -214,19 +253,21 @@ public class PersonInfo extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                intent.putExtra("newperson",text.getText().toString());
+                intent.putExtra("newperson",name.getText().toString());
                 setResult(RESULT_OK,intent);
-                if(uppermission)
-                upload();
-                else{
+                if(!goodpic)
                     Toast.makeText(MyApplication.getContext(),"请上传一张有效照片",Toast.LENGTH_SHORT).show();
+                else if(check())
+                    Toast.makeText(MyApplication.getContext(),"请完善信息",Toast.LENGTH_SHORT).show();
+                else{
+                    upload();
                 }
             }
         });
         Intent intent=getIntent();
         data=intent.getStringExtra("data");
         if(!data.equals("no")){
-            text.setText(data);
+            name.setText(data);
             File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
             if (!appDir.exists()) {
                 appDir.mkdir();
@@ -251,25 +292,6 @@ public class PersonInfo extends AppCompatActivity {
             }
         }
     }
-    public static File getFileFromBytes(byte[] b, File file) {
-        BufferedOutputStream stream = null;
-        try {
-            FileOutputStream fstream = new FileOutputStream(file);
-            stream = new BufferedOutputStream(fstream);
-            stream.write(b);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        }
-        return file;
-    }
     private void showDate(Calendar calendar){
         int year = calendar.get(Calendar.YEAR);//当前年
         int month = calendar.get(Calendar.MONTH);//当前月
@@ -278,14 +300,13 @@ public class PersonInfo extends AppCompatActivity {
         dialog.show();
     }
     protected void takePic(){
-        uppermission=false;
-        if(!text.getText().toString().equals("")){
+        goodpic=false;
+        if(!name.getText().toString().equals("")){
             File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
             if (!appDir.exists()) {
                 appDir.mkdir();
             }
-            name=text.getText().toString();
-            outputimage = new File(appDir,name+".jpg");
+            outputimage = new File(appDir,name.getText()+".jpg");
             if(outputimage.exists()){
                 outputimage.delete();
             }
@@ -374,7 +395,7 @@ public class PersonInfo extends AppCompatActivity {
                         String string=FaceHelper.facefind(newbitmap);
                         Toast.makeText(MyApplication.getContext(),string+"",Toast.LENGTH_SHORT).show();
                         if(string.equals("检测到人脸")){
-                            uppermission=true;
+                            goodpic=true;
                         }
                 }
                 break;

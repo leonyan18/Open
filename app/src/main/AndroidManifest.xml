@@ -36,7 +36,7 @@
         </activity>
         <activity
             android:name=".PersonInfo"
-            android:label="@string/personmange"
+            android:label=" "
             >
         </activity>
         <provider

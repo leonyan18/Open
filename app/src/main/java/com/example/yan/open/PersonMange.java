@@ -1,10 +1,10 @@
 package com.example.yan.open;
 
-import android.app.DownloadManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -48,6 +48,10 @@ public class PersonMange extends AppCompatActivity{
         listView=findViewById(R.id.personlist);
         persondata.add("father");
         initperson();
+        Toolbar toolbar=findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle("人员管理");
+        toolbar.setTitleTextColor(0xffffff);
         adapter=new ArrayAdapter<String>(PersonMange.this,android.R.layout.simple_list_item_1,persondata);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

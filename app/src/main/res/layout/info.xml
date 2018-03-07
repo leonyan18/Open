@@ -1,66 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
-    <Button
-        android:id="@+id/uploading"
-        android:layout_width="147dp"
-        android:layout_height="38dp"
-        android:layout_marginBottom="4dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="128dp"
-        android:background="#2187EB"
-        android:text="拍摄人脸"
-        android:textColor="#ffffff"
-        app:layout_constraintBottom_toTopOf="@+id/save"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="fill_parent"
+        android:layout_height="36dp"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="编辑人员"
+            android:textColor="#ffffff"
+            android:textSize="17dp" />
+    </android.support.v7.widget.Toolbar>
+
 
     <ImageView
         android:id="@+id/perface"
-        android:layout_width="310dp"
-        android:layout_height="254dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="216dp"
+        android:layout_height="216dp"
+        android:layout_gravity="center_horizontal"
         app:srcCompat="@drawable/account" />
-
-    <Button
-        android:id="@+id/save"
-        android:layout_width="147dp"
-        android:layout_height="34dp"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:background="#2187EB"
-        android:text="保存并上传"
-        android:textColor="#ffffff"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.484"
-        app:layout_constraintStart_toStartOf="parent" />
 
 
     <LinearLayout
         android:id="@+id/linearLayout8"
-        android:layout_width="365dp"
-        android:layout_height="118dp"
+        android:layout_width="364dp"
+        android:layout_height="201dp"
+        android:layout_gravity="center_horizontal"
         android:layout_marginBottom="20dp"
-        android:layout_marginEnd="8dp"
-        android:orientation="vertical"
-        android:background="@drawable/shape_corner"
-        app:layout_constraintBottom_toTopOf="@+id/uploading"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.909"
-        app:layout_constraintStart_toStartOf="parent">
+        android:background="#ffffff"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90909090" />
 
         <LinearLayout
             android:id="@+id/linearLayout2"
@@ -71,20 +60,78 @@
             tools:layout_editor_absoluteY="297dp">
 
             <TextView
-                android:layout_width="75dp"
-                android:layout_height="match_parent"
+                android:layout_width="61dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="15dp"
                 android:text="名字 :"
                 android:textColor="#000000"
-                android:textSize="20dp" />
+                android:textSize="15dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="5dp"
+                android:background="#90909090" />
 
             <EditText
                 android:id="@+id/name"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="272dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:background="@null"
                 android:inputType="textPersonName" />
         </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90909090" />
+
+        <LinearLayout
+            android:id="@+id/linearLayoutphone"
+            android:layout_width="match_parent"
+            android:layout_height="37dp"
+            android:orientation="horizontal"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="297dp">
+
+            <TextView
+                android:layout_width="97dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:text="联系方式 :"
+                android:textColor="#000000"
+                android:textSize="15dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="5dp"
+                android:background="#90909090" />
+
+            <EditText
+                android:id="@+id/phone"
+                android:layout_width="272dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:inputType="textPersonName" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90909090" />
 
         <LinearLayout
             android:id="@+id/linearLayout3"
@@ -96,30 +143,54 @@
 
             <TextView
                 android:id="@+id/textView7"
-                android:layout_width="62dp"
-                android:layout_height="match_parent"
+                android:layout_width="71dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="15dp"
                 android:layout_weight="1"
-                android:text="访客类型 :"
+                android:text="访客类型 : "
                 android:textColor="#000000"
-                android:textSize="20dp" />
+                android:textSize="15dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="5dp"
+                android:background="#90909090" />
 
             <CheckBox
                 android:id="@+id/always"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="15dp"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:text="常驻人员" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
+                android:background="#90909090" />
 
             <CheckBox
                 android:id="@+id/shtime"
                 android:layout_width="94dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_weight="1"
                 android:text="访客" />
 
         </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90909090" />
 
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -131,23 +202,61 @@
 
             <TextView
                 android:id="@+id/textView5"
-                android:layout_width="115dp"
-                android:layout_height="37dp"
+                android:layout_width="119dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginLeft="15dp"
                 android:layout_weight="1"
                 android:text="截止日期 :"
                 android:textColor="#000000"
-                android:textSize="20dp" />
+                android:textSize="15dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="5dp"
+                android:background="#90909090" />
 
             <Button
                 android:id="@+id/dbutton"
                 android:layout_width="253dp"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:layout_marginRight="5dp"
                 android:layout_weight="1"
-                android:text="日期选择" />
-
+                android:background="#2187EB"
+                android:text="日期选择"
+                android:textColor="#ffffff" />
         </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90909090" />
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+    <Button
+        android:id="@+id/uploading"
+        android:layout_width="147dp"
+        android:layout_height="38dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="4dp"
+        android:background="#2187EB"
+        android:text="拍摄人脸"
+        android:textColor="#ffffff" />
+
+    <Button
+        android:id="@+id/save"
+        android:layout_width="147dp"
+        android:layout_height="38dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="4dp"
+        android:background="#2187EB"
+        android:text="保存并上传"
+        android:textColor="#ffffff" />
+
+</LinearLayout>

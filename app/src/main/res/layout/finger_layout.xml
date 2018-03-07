@@ -12,6 +12,7 @@
         android:layout_gravity="center" />
 
     <TextView
+        android:id="@+id/result"
         android:layout_width="94dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

@@ -1,18 +1,39 @@
 package com.example.yan.open;
 
 import android.content.Intent;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private Button login;
+    private EditText user,password;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         login=findViewById(R.id.login);
+        user=findViewById(R.id.user);
+        password=findViewById(R.id.password);
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -20,6 +41,49 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent=new Intent(MainActivity.this,DoorControl.class);
                 startActivity(intent);
                 finish();
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        OkHttpClient client =client = new OkHttpClient.Builder()
+//                                .connectTimeout(4, TimeUnit.SECONDS)
+//                                .readTimeout(20, TimeUnit.SECONDS)
+//                                .build();  //创建OkHttpClient对象。
+//                        RequestBody body = new MultipartBody.Builder("AaB03x")
+//                                .setType(MultipartBody.FORM)
+//                                .addFormDataPart("user",user.getText().toString())
+//                                .addFormDataPart("password",password.getText().toString())
+//                                .build();
+//                        Request request = new Request.Builder()
+//                                .url("http://192.168.0.122:8080/api/upload")
+//                                .post(body)
+//                                .build();
+//                        client.newCall(request).enqueue(new Callback() {
+//                            @Override
+//                            public void onFailure(Call call, IOException e) {
+//                                Log.d("onFailure", e.toString());
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        Toast.makeText(MyApplication.getContext(),"连接超时请检查网络",Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//
+//                            }
+//
+//                            @Override
+//                            public void onResponse(Call call, Response response) throws IOException {
+//                                Log.d("onResponse", response.body().string());
+//                                if(response.body().string().equals("success")){
+//                                    SharedPreferencesUtils.saveData(MyApplication.getContext(),"user",user.getText().toString());
+//                                    Intent intent=new Intent(MainActivity.this,DoorControl.class);
+//                                    startActivity(intent);
+//                                    finish();
+//                                }
+//                            }
+//
+//                        });
+//                    }
+//                }).start();
             }
         });
     }
