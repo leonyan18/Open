@@ -33,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.guo.android_extend.image.ImageConverter;
+import com.sdsmdg.tastytoast.TastyToast;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,6 +73,7 @@ public class PersonInfo extends AppCompatActivity {
     private Intent intent;
     private CheckBox checkBox1L,checkBox2S;
     private Button dbutton;
+    private int kind;
     private File outputimage;
     private LoadingAlertDialog dialog;
     private boolean goodpic;
@@ -79,7 +81,7 @@ public class PersonInfo extends AppCompatActivity {
 
         @Override
         public void onDateSet(DatePicker view, int years, int monthOfYear, int dayOfMonth) {
-            dbutton.setText(years+"年"+(monthOfYear+1)+"月"+dayOfMonth+"日");
+            dbutton.setText(years+"\\"+(monthOfYear+1)+"\\"+dayOfMonth+"");
         }
     };
     public void setName(String name){
@@ -103,6 +105,7 @@ public class PersonInfo extends AppCompatActivity {
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
                         .addFormDataPart("phone", phone.getText().toString())
                         .addFormDataPart("日期",dbutton.getText().toString())
+                        .addFormDataPart("kind",String.valueOf(kind))
                         .addFormDataPart("name",name.getText().toString())
                         .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
                         .build();
@@ -138,9 +141,11 @@ public class PersonInfo extends AppCompatActivity {
     private Boolean check(){
         if(goodpic&&name.getText().equals("")&&phone.getText().equals("")){
             if(checkBox1L.isChecked()){
+                kind=0;
                 return true;
             }
             else if(checkBox2S.isChecked()&&!dbutton.getText().equals("日期选择")){
+                kind=1;
                 return true;
             }
             return false;
@@ -196,7 +201,7 @@ public class PersonInfo extends AppCompatActivity {
                     checkBox2S.setChecked(false);
                 }
                 if(checkBox1L.isChecked()){
-                    dbutton.setText("---");
+                    dbutton.setText("9999\\12\\30");
                     dbutton.setClickable(false);
                 }
             }
@@ -256,9 +261,11 @@ public class PersonInfo extends AppCompatActivity {
                 intent.putExtra("newperson",name.getText().toString());
                 setResult(RESULT_OK,intent);
                 if(!goodpic)
-                    Toast.makeText(MyApplication.getContext(),"请上传一张有效照片",Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(MyApplication.getContext(), "请上传一张有效照片", TastyToast.LENGTH_LONG,
+                            TastyToast.WARNING);
                 else if(check())
-                    Toast.makeText(MyApplication.getContext(),"请完善信息",Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(MyApplication.getContext(), "请完善信息", TastyToast.LENGTH_LONG,
+                            TastyToast.WARNING);
                 else{
                     upload();
                 }
@@ -329,7 +336,8 @@ public class PersonInfo extends AppCompatActivity {
             startActivityForResult(intent,1);
         }
         else{
-            Toast.makeText(PersonInfo.this,"请输入名字",Toast.LENGTH_SHORT).show();
+            TastyToast.makeText(MyApplication.getContext(), "请输入名字", TastyToast.LENGTH_LONG,
+                    TastyToast.WARNING);
         }
     }
     /**

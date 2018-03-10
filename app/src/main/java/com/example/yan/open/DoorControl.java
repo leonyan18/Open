@@ -19,6 +19,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.sdsmdg.tastytoast.TastyToast;
+
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -50,77 +52,104 @@ public class DoorControl extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Door door=doorList.get(i);
-                jsFingerUtils = new JsFingerUtils(DoorControl.this);
-                final AlertDialog.Builder builder = new AlertDialog.Builder(DoorControl.this);
-                builder.setTitle("指纹识别");
-                //    通过LayoutInflater来加载一个xml的布局文件作为一个View对象
-                View viewf = LayoutInflater.from(DoorControl.this).inflate(R.layout.finger_layout, null);
-                //    设置我们自己定义的布局文件作为弹出框的Content
-                builder.setView(viewf);
-                final TextView textView=viewf.findViewById(R.id.result);
-                final FingerPrinterView fingerPrinterView=viewf.findViewById(R.id.finger);
-                final AlertDialog dia = builder.show();
-                jsFingerUtils.startListening(new FingerListener() {
-                    @Override
-                    public void onStartListening() {
-                        if (fingerPrinterView.getState() == FingerPrinterView.STATE_SCANING) {
-                            return;
-                        } else if (fingerPrinterView.getState() == FingerPrinterView.STATE_CORRECT_PWD
-                                || fingerPrinterView.getState() == FingerPrinterView.STATE_WRONG_PWD) {
-                            fingerPrinterView.setState(FingerPrinterView.STATE_NO_SCANING);
-                        } else {
-                            fingerPrinterView.setState(FingerPrinterView.STATE_SCANING);
+                if(SharedPreferencesUtils.getData(MyApplication.getContext(),"openFinger",false)){
+                    jsFingerUtils = new JsFingerUtils(DoorControl.this);
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(DoorControl.this);
+                    builder.setTitle("指纹识别");
+                    //    通过LayoutInflater来加载一个xml的布局文件作为一个View对象
+                    View viewf = LayoutInflater.from(DoorControl.this).inflate(R.layout.finger_layout, null);
+                    //    设置我们自己定义的布局文件作为弹出框的Content
+                    builder.setView(viewf);
+                    final TextView textView=viewf.findViewById(R.id.result);
+                    final FingerPrinterView fingerPrinterView=viewf.findViewById(R.id.finger);
+                    dialog = builder.show();
+                    jsFingerUtils.startListening(new FingerListener() {
+                        @Override
+                        public void onStartListening() {
+                            if (fingerPrinterView.getState() == FingerPrinterView.STATE_SCANING) {
+                                return;
+                            } else if (fingerPrinterView.getState() == FingerPrinterView.STATE_CORRECT_PWD
+                                    || fingerPrinterView.getState() == FingerPrinterView.STATE_WRONG_PWD) {
+                                fingerPrinterView.setState(FingerPrinterView.STATE_NO_SCANING);
+                            } else {
+                                fingerPrinterView.setState(FingerPrinterView.STATE_SCANING);
 
+
+                            }
+                        }
+
+                        @Override
+                        public void onStopListening() {
 
                         }
-                    }
 
-                    @Override
-                    public void onStopListening() {
-
-                    }
-
-                    @Override
-                    public void onSuccess(FingerprintManager.AuthenticationResult result) {
-                        fingerPrinterView.setState(FingerPrinterView.STATE_CORRECT_PWD);
-                    }
-
-                    @Override
-                    public void onFail(boolean isNormal, String info) {
-                        fingerPrinterView.setState(FingerPrinterView.STATE_WRONG_PWD);
-                    }
-
-                    @Override
-                    public void onAuthenticationError(int errorCode, CharSequence errString) {
-                        Log.d("onAuthenticationError: ",errorCode+"     "+ errString.toString());
-                    }
-
-                    @Override
-                    public void onAuthenticationHelp(int helpCode, CharSequence helpString) {
-                        Log.d("onAuthenticationError: ",helpCode+"     "+ helpString.toString());
-                    }
-                });
-                fingerPrinterView.setOnStateChangedListener(new FingerPrinterView.OnStateChangedListener() {
-                    @Override
-                    public void onChange(int state) {
-                        if (state == FingerPrinterView.STATE_CORRECT_PWD) {
-                            Toast.makeText(DoorControl.this, "指纹识别成功", Toast.LENGTH_SHORT).show();
-                            dia.dismiss();
+                        @Override
+                        public void onSuccess(FingerprintManager.AuthenticationResult result) {
+                            fingerPrinterView.setState(FingerPrinterView.STATE_CORRECT_PWD);
                         }
-                        if (state == FingerPrinterView.STATE_WRONG_PWD) {
-                            textView.setText("识别失败");
-                            textView.setTextColor(0xffec6a5c);
-                            fingerPrinterView.setState(FingerPrinterView.STATE_NO_SCANING);
+
+                        @Override
+                        public void onFail(boolean isNormal, String info) {
+                            fingerPrinterView.setState(FingerPrinterView.STATE_WRONG_PWD);
                         }
-                    }
-                });
-                dia.setCanceledOnTouchOutside(false);
-                dia.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        jsFingerUtils.cancelListening();
-                    }
-                });
+
+                        @Override
+                        public void onAuthenticationError(int errorCode, CharSequence errString) {
+                            Log.d("onAuthenticationError: ",errorCode+"     "+ errString.toString());
+                        }
+
+                        @Override
+                        public void onAuthenticationHelp(int helpCode, CharSequence helpString) {
+                            Log.d("onAuthenticationError: ",helpCode+"     "+ helpString.toString());
+                        }
+                    });
+                    fingerPrinterView.setOnStateChangedListener(new FingerPrinterView.OnStateChangedListener() {
+                        @Override
+                        public void onChange(int state) {
+                            if (state == FingerPrinterView.STATE_CORRECT_PWD) {
+                                TastyToast.makeText(MyApplication.getContext(), "指纹识别成功", TastyToast.LENGTH_LONG,
+                                        TastyToast.SUCCESS);
+                                dialog.dismiss();
+                            }
+                            if (state == FingerPrinterView.STATE_WRONG_PWD) {
+                                TastyToast.makeText(MyApplication.getContext(), "指纹识别失败", TastyToast.LENGTH_LONG,
+                                        TastyToast.ERROR);
+                                fingerPrinterView.setState(FingerPrinterView.STATE_NO_SCANING);
+                            }
+                        }
+                    });
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            jsFingerUtils.cancelListening();
+                        }
+                    });
+                }
+                else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(DoorControl.this);
+                    builder.setTitle("指纹识别");
+                    //    通过LayoutInflater来加载一个xml的布局文件作为一个View对象
+                    View viewf = LayoutInflater.from(DoorControl.this).inflate(R.layout.pass_door, null);
+                    builder.setTitle("请输入登录密码");
+                    builder.setView(viewf);
+                    final EditText text=viewf.findViewById(R.id.doorkey);
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                             dialog.cancel();
+                        }
+                    });
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            text.getText();
+                        }
+                    });
+                    builder.show();
+
+                }
             }
         });
         personal=findViewById(R.id.user);

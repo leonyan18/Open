@@ -2,6 +2,7 @@ package com.example.yan.open;
 
 import android.content.Intent;
 import android.os.Environment;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -37,9 +38,9 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                ActivityOptionsCompat oc2 = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this);
                 Intent intent=new Intent(MainActivity.this,DoorControl.class);
-                startActivity(intent);
+                startActivity(intent,oc2.toBundle());
                 finish();
 //                new Thread(new Runnable() {
 //                    @Override
