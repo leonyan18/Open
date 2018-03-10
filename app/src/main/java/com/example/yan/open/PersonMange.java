@@ -2,7 +2,6 @@ package com.example.yan.open;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -17,6 +16,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.gc.materialdesign.views.ButtonFlat;
+import com.gc.materialdesign.views.ButtonFloat;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -29,8 +31,8 @@ import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
+
 
 
 /**
@@ -44,7 +46,7 @@ public class PersonMange extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.person_mange);
-        FloatingActionButton button_add=findViewById(R.id.add_person);
+        ButtonFloat button_add=findViewById(R.id.add_person);
         listView=findViewById(R.id.personlist);
         persondata.add("father");
         initperson();
