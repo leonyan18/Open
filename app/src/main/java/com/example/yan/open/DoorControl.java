@@ -25,9 +25,17 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.observers.DisposableObserver;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by yan on 2018/1/29.
@@ -110,6 +118,34 @@ public class DoorControl extends AppCompatActivity {
                                 TastyToast.makeText(MyApplication.getContext(), "指纹识别成功", TastyToast.LENGTH_LONG,
                                         TastyToast.SUCCESS);
                                 dialog.dismiss();
+                                OkHttpClient client=new OkHttpClient.Builder()
+                                        .connectTimeout(4, TimeUnit.SECONDS)
+                                        .readTimeout(20, TimeUnit.SECONDS)
+                                        .build();
+                                RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "1212");
+                                Request request=new Request.Builder()
+                                        .url("http://192.168.0.122:8080/api/open/"+"212321")
+                                        .build();
+                                client.newCall(request).enqueue(new Callback() {
+                                    @Override
+                                    public void onFailure(Call call, IOException e) {
+
+                                    }
+
+                                    @Override
+                                    public void onResponse(Call call, Response response) throws IOException {
+                                        if (response.body().string().contains("success")){
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
+                                                            TastyToast.SUCCESS);
+                                                }
+                                            });
+
+                                        }
+                                    }
+                                });
                             }
                             if (state == FingerPrinterView.STATE_WRONG_PWD) {
                                 TastyToast.makeText(MyApplication.getContext(), "指纹识别失败", TastyToast.LENGTH_LONG,
@@ -186,6 +222,13 @@ public class DoorControl extends AppCompatActivity {
                     .create();
             dialog.show();
         }
+    }
+    private void openDoor(){
+        OkHttpClient client =client = new OkHttpClient.Builder()
+                .connectTimeout(4, TimeUnit.SECONDS)
+                .readTimeout(20, TimeUnit.SECONDS)
+                .build();  //创建OkHttpClient对象。
+
     }
     private void initDoor(){
         Door door1=new Door("12#611");

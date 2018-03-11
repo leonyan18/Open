@@ -13,11 +13,13 @@ import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
+import com.sdsmdg.tastytoast.TastyToast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,12 +27,15 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 
@@ -80,12 +85,44 @@ public class PersonMange extends AppCompatActivity{
         });
     }
     public boolean onContextItemSelected(MenuItem item) {
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
         switch (item.getItemId()) {
             default:
                 Log.d("id121", "onContextItemSelected: "+info.id);
-                persondata.remove((int )info.id);
-                listView.setAdapter(adapter);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        OkHttpClient client=new OkHttpClient.Builder()
+                                .connectTimeout(4, TimeUnit.SECONDS)
+                                .readTimeout(20, TimeUnit.SECONDS)
+                                .build();
+                        RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "");
+                        Request request=new Request.Builder()
+                                .url("http://192.168.0.122:8080/api/user/"+
+                                        SharedPreferencesUtils.getData
+                                                (MyApplication.getContext(),persondata.get((int)info.id),""))
+                                .delete()
+                                .build();
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        TastyToast.makeText(MyApplication.getContext(), "连接超时", TastyToast.LENGTH_LONG,
+                                                TastyToast.ERROR);
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+                                persondata.remove((int )info.id);
+                                listView.setAdapter(adapter);
+                            }
+                        });
+                    }
+                }).start();
                 return true;
         }
     }
@@ -96,7 +133,8 @@ public class PersonMange extends AppCompatActivity{
                 if(data!=null&&data.getBooleanExtra("or",false)){
                     persondata.add(data.getStringExtra("newperson"));
                     listView.setAdapter(adapter);
-                    Toast.makeText(PersonMange.this,"上传成功",Toast.LENGTH_SHORT).show();
+                    TastyToast.makeText(MyApplication.getContext(), "上传成功", TastyToast.LENGTH_LONG,
+                            TastyToast.SUCCESS);
                 }
                 break;
             default:break;
@@ -107,10 +145,39 @@ public class PersonMange extends AppCompatActivity{
             @Override
             public void run() {
                 OkHttpClient client=new OkHttpClient();
+                RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "1212");
                 Request request=new Request.Builder()
                         .url("http://192.168.2.187:8080/docs/person.json")
+                        .post(body)
                         .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        pareseJsonchange(response.body().string());
+                    }
+                });
             }
         }).start();
+    }
+    private void pareseJsonchange(String jsonData){
+        try {
+            JSONArray jsonArray=new JSONArray(jsonData);
+            for(int i=0;i<jsonArray.length();i++){
+                JSONObject jsonObject=jsonArray.getJSONObject(i);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                });
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

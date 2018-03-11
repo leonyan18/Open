@@ -19,5 +19,11 @@
         <!--是否模糊-->
         <item name="android:backgroundDimEnabled">false</item>
     </style>
+    <style name="cb_test">
+        <!--波纹的颜色-->
+        <item name="android:colorControlHighlight">@color/colorPrimary</item>
+        <!--选中的颜色-->
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
 
 </resources>

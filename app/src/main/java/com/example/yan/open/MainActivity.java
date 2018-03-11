@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -62,22 +63,32 @@ public class MainActivity extends AppCompatActivity {
 //                            @Override
 //                            public void onFailure(Call call, IOException e) {
 //                                Log.d("onFailure", e.toString());
-//                                runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        Toast.makeText(MyApplication.getContext(),"连接超时请检查网络",Toast.LENGTH_SHORT).show();
-//                                    }
-//                                });
+//                                if(e.getCause().equals(SocketTimeoutException.class)){
+//                                    runOnUiThread(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            Toast.makeText(MyApplication.getContext(),"连接超时请检查网络",Toast.LENGTH_SHORT).show();
+//                                        }
+//                                    });
+//                                }
+//                                else {
+//                                    runOnUiThread(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            Toast.makeText(MyApplication.getContext(),"密码错误",Toast.LENGTH_SHORT).show();
+//                                        }
+//                                    });
+//                                }
 //
 //                            }
-//
 //                            @Override
 //                            public void onResponse(Call call, Response response) throws IOException {
 //                                Log.d("onResponse", response.body().string());
 //                                if(response.body().string().equals("success")){
 //                                    SharedPreferencesUtils.saveData(MyApplication.getContext(),"user",user.getText().toString());
+//                                    ActivityOptionsCompat oc2 = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this);
 //                                    Intent intent=new Intent(MainActivity.this,DoorControl.class);
-//                                    startActivity(intent);
+//                                    startActivity(intent,oc2.toBundle());
 //                                    finish();
 //                                }
 //                            }

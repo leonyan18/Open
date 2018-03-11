@@ -103,14 +103,17 @@ public class PersonInfo extends AppCompatActivity {
                         .setType(MultipartBody.FORM)
                         .addPart(Headers.of("Content-Disposition", "form-data; name=\"image\"; filename=\""+name.getText()+".jpg\""),
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
-                        .addFormDataPart("phone", phone.getText().toString())
-                        .addFormDataPart("日期",dbutton.getText().toString())
-                        .addFormDataPart("kind",String.valueOf(kind))
-                        .addFormDataPart("name",name.getText().toString())
-                        .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
+                        .addFormDataPart("methodId","1")
+                        .addFormDataPart("tel", phone.getText().toString())
+                        .addFormDataPart("endDate",dbutton.getText().toString())
+                        .addFormDataPart("password","1212")
+                        .addFormDataPart("username",name.getText().toString())
+                       // .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
+                        .addFormDataPart("id","0")
+                        .addFormDataPart("parentAccount","121")
                         .build();
                 Request request = new Request.Builder()
-                        .url("http://192.168.0.122:8080/api/upload")
+                        .url("http://192.168.0.122:8080/api/user")
                         .post(body)
                         .build();
                 client.newCall(request).enqueue(new Callback() {
@@ -129,6 +132,7 @@ public class PersonInfo extends AppCompatActivity {
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
+                        if(response.body().string().equals("success"))
                         intent.putExtra("or",true);
                         Log.d("onResponse", response.body().string());
                         finish();
@@ -242,13 +246,6 @@ public class PersonInfo extends AppCompatActivity {
                 showDate(calendar);
             }
         });
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getUrlImage("http://www.nowamagic.net/librarys/images/random/rand_11.jpg");
-            }
-        }).start();
         takeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -397,14 +394,10 @@ public class PersonInfo extends AppCompatActivity {
         switch (requestCode){
             case take_photo:
                 if(resultCode==RESULT_OK){
-                        Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name+".jpg"),getSmallBitmap(outputimage,800,400));
+                        Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name.getText()+".jpg"),getSmallBitmap(outputimage,800,400));
                         imageView.setImageBitmap(newbitmap);
                         compressImage(newbitmap);
-                        String string=FaceHelper.facefind(newbitmap);
-                        Toast.makeText(MyApplication.getContext(),string+"",Toast.LENGTH_SHORT).show();
-                        if(string.equals("检测到人脸")){
-                            goodpic=true;
-                        }
+                        goodpic=true;
                 }
                 break;
             default:break;

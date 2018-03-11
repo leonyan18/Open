@@ -9,6 +9,7 @@
         android:layout_height="35dp"
         android:layout_gravity="center"
         android:layout_marginTop="15dp"
+        android:paddingLeft="10dp"
         android:background="@drawable/border_shape"
         android:ems="10"
         android:inputType="textPassword" />

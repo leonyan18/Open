@@ -19,24 +19,24 @@
             android:textColor="#ffffff"
             android:textSize="17dp" />
     </android.support.v7.widget.Toolbar>
-    <com.gc.materialdesign.views.ButtonFloat
-        android:id="@+id/add_person"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:background="#1E88E5"
-        materialdesign:animate="true"
-        materialdesign:iconDrawable="@drawable/ic_action_new" />
 
     <ListView
         android:id="@+id/personlist"
-        android:layout_width="361dp"
-        android:layout_height="504dp"
-        android:layout_alignParentEnd="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/toolbar">
 
     </ListView>
+    <com.gc.materialdesign.views.ButtonFloat
+        android:id="@+id/add_person"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_above="@id/personlist"
+        android:layout_alignParentBottom="true"
+        android:background="#1E88E5"
+        materialdesign:animate="true"
+        materialdesign:iconDrawable="@drawable/ic_action_new" />
 
 </RelativeLayout>

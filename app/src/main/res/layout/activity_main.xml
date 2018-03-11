@@ -16,7 +16,7 @@
         android:background="#2187EB"
         android:text="登录"
         android:textColor="#ffffff"
-        android:textSize="36px"
+        android:textSize="17dp"
         app:layout_constraintBottom_toTopOf="@+id/regist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -31,7 +31,7 @@
         android:background="#2187EB"
         android:text="注册"
         android:textColor="#ffffff"
-        android:textSize="36px"
+        android:textSize="17dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -99,7 +99,7 @@
 
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="70dp"
+            android:layout_width="79dp"
             android:layout_height="match_parent"
             android:layout_marginLeft="15dp"
             android:layout_weight="1"
