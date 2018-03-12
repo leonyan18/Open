@@ -35,6 +35,8 @@ import android.widget.Toast;
 import com.guo.android_extend.image.ImageConverter;
 import com.sdsmdg.tastytoast.TastyToast;
 
+import org.litepal.crud.DataSupport;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,6 +50,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -69,7 +72,6 @@ public class PersonInfo extends AppCompatActivity {
     private Uri imageuri;
     private  EditText name,phone;
     private ImageView imageView;
-    private String data;
     private Intent intent;
     private CheckBox checkBox1L,checkBox2S;
     private Button dbutton;
@@ -81,12 +83,9 @@ public class PersonInfo extends AppCompatActivity {
 
         @Override
         public void onDateSet(DatePicker view, int years, int monthOfYear, int dayOfMonth) {
-            dbutton.setText(years+"\\"+(monthOfYear+1)+"\\"+dayOfMonth+"");
+            dbutton.setText(years+"-"+(monthOfYear+1)+"-"+dayOfMonth);
         }
     };
-    public void setName(String name){
-        this.name.setText(name);
-    }
     public void upload(){
         dialog = new LoadingAlertDialog(PersonInfo.this);
         dialog.show("上传中...");
@@ -105,12 +104,11 @@ public class PersonInfo extends AppCompatActivity {
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
                         .addFormDataPart("methodId","1")
                         .addFormDataPart("tel", phone.getText().toString())
-                        .addFormDataPart("endDate",dbutton.getText().toString())
+                        .addFormDataPart("endDate",dbutton.getText().toString()+" 00:00:00")
                         .addFormDataPart("password","1212")
                         .addFormDataPart("username",name.getText().toString())
                        // .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
                         .addFormDataPart("id","0")
-                        .addFormDataPart("parentAccount","121")
                         .build();
                 Request request = new Request.Builder()
                         .url("http://192.168.0.122:8080/api/user")
@@ -132,10 +130,10 @@ public class PersonInfo extends AppCompatActivity {
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        if(response.body().string().equals("success"))
+//                        if(response.body().string().equals("success"))
                         intent.putExtra("or",true);
-                        Log.d("onResponse", response.body().string());
                         finish();
+                        dialog.dismiss();
                     }
 
                 });
@@ -205,7 +203,7 @@ public class PersonInfo extends AppCompatActivity {
                     checkBox2S.setChecked(false);
                 }
                 if(checkBox1L.isChecked()){
-                    dbutton.setText("9999\\12\\30");
+                    dbutton.setText("9999-12-30");
                     dbutton.setClickable(false);
                 }
             }
@@ -225,23 +223,23 @@ public class PersonInfo extends AppCompatActivity {
         dbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            URL url = null;//取得资源对象
-                            url = new URL("http://www.baidu.com");
-                            URLConnection uc = url.openConnection();//生成连接对象
-                            uc.connect(); //发出连接
-                            long ld = uc.getDate();
-                            Calendar calendar=Calendar.getInstance();
-                            calendar.setTimeInMillis(ld);
-                            showDate(calendar);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }).start();//没有同步
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            URL url = null;//取得资源对象
+//                            url = new URL("http://www.baidu.com");
+//                            URLConnection uc = url.openConnection();//生成连接对象
+//                            uc.connect(); //发出连接
+//                            long ld = uc.getDate();
+//                            Calendar calendar=Calendar.getInstance();
+//                            calendar.setTimeInMillis(ld);
+//                            showDate(calendar);
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }).start();//没有同步
                 Calendar calendar=Calendar.getInstance();
                 showDate(calendar);
             }
@@ -269,31 +267,20 @@ public class PersonInfo extends AppCompatActivity {
             }
         });
         Intent intent=getIntent();
-        data=intent.getStringExtra("data");
+        String data=intent.getStringExtra("data");
         if(!data.equals("no")){
-            name.setText(data);
-            File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
-            if (!appDir.exists()) {
-                appDir.mkdir();
+            Person person = DataSupport.where("username = ?", data).findFirst(Person.class);
+            dbutton.setText(person.getEnddate());
+            if(person.getEnddate().equals("9999-12-30")){
+                checkBox2S.setChecked(false);
+                checkBox1L.setChecked(true);
             }
-            outputimage = new File(appDir,data+".jpg");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                imageuri = FileProvider.getUriForFile(PersonInfo.this, "com.example.yan.open.fileprovider", outputimage);
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            } else {
-                //7.0以下使用这种方式创建一个Uri
-                imageuri = Uri.fromFile(outputimage);
+            else{
+                checkBox2S.setChecked(true);
+                checkBox1L.setChecked(false);
             }
-            try{
-                Bitmap bitmap= BitmapFactory.decodeStream(getContentResolver().openInputStream(imageuri));
-                Matrix m = new Matrix();
-                m.postRotate(90);
-                Bitmap newbitmap=Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, true);
-                imageView.setImageBitmap(newbitmap);
-            }catch (IOException e){
-                e.printStackTrace();
-            }
+            name.setText(person.getUsername());
+            phone.setText(person.getTel());
         }
     }
     private void showDate(Calendar calendar){

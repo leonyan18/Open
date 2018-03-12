@@ -13,21 +13,18 @@ import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
-
-import com.gc.materialdesign.views.ButtonFlat;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.sdsmdg.tastytoast.TastyToast;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.litepal.LitePal;
+import org.litepal.crud.DataSupport;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -66,6 +63,7 @@ public class PersonMange extends AppCompatActivity{
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent=new Intent(PersonMange.this,PersonInfo.class);
                 intent.putExtra("data",persondata.get(i));
+                intent.putExtra("opreation","1");
                 startActivity(intent);
             }
         });
@@ -73,6 +71,7 @@ public class PersonMange extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 Intent intent=new Intent(PersonMange.this,PersonInfo.class);
+                intent.putExtra("opreation","0");
                 intent.putExtra("data","no");
                 startActivityForResult(intent,1);
             }
@@ -96,7 +95,6 @@ public class PersonMange extends AppCompatActivity{
                                 .connectTimeout(4, TimeUnit.SECONDS)
                                 .readTimeout(20, TimeUnit.SECONDS)
                                 .build();
-                        RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "");
                         Request request=new Request.Builder()
                                 .url("http://192.168.0.122:8080/api/user/"+
                                         SharedPreferencesUtils.getData
@@ -117,8 +115,15 @@ public class PersonMange extends AppCompatActivity{
 
                             @Override
                             public void onResponse(Call call, Response response) throws IOException {
-                                persondata.remove((int )info.id);
-                                listView.setAdapter(adapter);
+                                DataSupport.deleteAll(Person.class,"name = ?",persondata.get((int)info.id));
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        persondata.remove((int )info.id);
+                                        listView.setAdapter(adapter);
+                                    }
+                                });
+
                             }
                         });
                     }
@@ -145,10 +150,8 @@ public class PersonMange extends AppCompatActivity{
             @Override
             public void run() {
                 OkHttpClient client=new OkHttpClient();
-                RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "1212");
                 Request request=new Request.Builder()
-                        .url("http://192.168.2.187:8080/docs/person.json")
-                        .post(body)
+                        .url("http://192.168.0.122:8080/api/users/0")
                         .build();
                 client.newCall(request).enqueue(new Callback() {
                     @Override
@@ -166,13 +169,24 @@ public class PersonMange extends AppCompatActivity{
     }
     private void pareseJsonchange(String jsonData){
         try {
-            JSONArray jsonArray=new JSONArray(jsonData);
+            JSONObject json=new JSONObject(jsonData);
+            final JSONArray jsonArray=json.getJSONArray("data");
             for(int i=0;i<jsonArray.length();i++){
                 JSONObject jsonObject=jsonArray.getJSONObject(i);
+                final String peoname=jsonArray.getJSONObject(i).getString("username");
+                final String id=jsonArray.getJSONObject(i).getString("id");
+                Person person=new Person();
+                person.setUserid(id);
+                person.setTel(jsonObject.getString("tel"));
+                person.setUsername(peoname);
+                person.setEnddate(jsonObject.getString("endDate"));
+                person.save();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-
+                        SharedPreferencesUtils.saveData(MyApplication.getContext(),peoname,id);
+                        persondata.add(peoname);
+                        listView.setAdapter(adapter);
                     }
                 });
             }

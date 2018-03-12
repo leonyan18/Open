@@ -124,7 +124,7 @@ public class DoorControl extends AppCompatActivity {
                                         .build();
                                 RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "1212");
                                 Request request=new Request.Builder()
-                                        .url("http://192.168.0.122:8080/api/open/"+"212321")
+                                        .url("http://192.168.0.122:8080/api/open/"+"12345")
                                         .build();
                                 client.newCall(request).enqueue(new Callback() {
                                     @Override
