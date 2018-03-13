@@ -79,6 +79,8 @@ public class PersonInfo extends AppCompatActivity {
     private File outputimage;
     private LoadingAlertDialog dialog;
     private boolean goodpic;
+    private String data;
+    private Person person;
     private DatePickerDialog.OnDateSetListener mdateListener = new DatePickerDialog.OnDateSetListener() {
 
         @Override
@@ -110,10 +112,19 @@ public class PersonInfo extends AppCompatActivity {
                        // .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
                         .addFormDataPart("id","0")
                         .build();
-                Request request = new Request.Builder()
-                        .url("http://192.168.0.122:8080/api/user")
-                        .post(body)
-                        .build();
+                Request request;
+                if(data.equals("no")){
+                    request = new Request.Builder()
+                            .url("http://192.168.0.122:8080/api/user")
+                            .post(body)
+                            .build();
+                }
+                else{
+                    request = new Request.Builder()
+                            .url("http://192.168.0.122:8080/api/userUpdate/"+person.getUserid())
+                            .post(body)
+                            .build();
+                }
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
@@ -130,7 +141,7 @@ public class PersonInfo extends AppCompatActivity {
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-//                        if(response.body().string().equals("success"))
+                       Log.d("onResponse",response.body().string());
                         intent.putExtra("or",true);
                         finish();
                         dialog.dismiss();
@@ -267,9 +278,9 @@ public class PersonInfo extends AppCompatActivity {
             }
         });
         Intent intent=getIntent();
-        String data=intent.getStringExtra("data");
+        data=intent.getStringExtra("data");
         if(!data.equals("no")){
-            Person person = DataSupport.where("username = ?", data).findFirst(Person.class);
+            person = DataSupport.where("username = ?", data).findFirst(Person.class);
             dbutton.setText(person.getEnddate());
             if(person.getEnddate().equals("9999-12-30")){
                 checkBox2S.setChecked(false);
@@ -281,6 +292,14 @@ public class PersonInfo extends AppCompatActivity {
             }
             name.setText(person.getUsername());
             phone.setText(person.getTel());
+            Log.d("image", "onCreate: "+"http://192.168.0.122:8080/images/"+person.getUserid()+".jpg");
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    getUrlImage("http://192.168.0.122:8080/images/"+person.getUserid()+".jpg");
+                }
+            }).start();
+
         }
     }
     private void showDate(Calendar calendar){

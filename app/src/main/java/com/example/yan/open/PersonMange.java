@@ -175,11 +175,13 @@ public class PersonMange extends AppCompatActivity{
                 JSONObject jsonObject=jsonArray.getJSONObject(i);
                 final String peoname=jsonArray.getJSONObject(i).getString("username");
                 final String id=jsonArray.getJSONObject(i).getString("id");
+                String date1=jsonArray.getJSONObject(i).getString("endDate");
+                date1=date1.substring(0,10);
                 Person person=new Person();
                 person.setUserid(id);
                 person.setTel(jsonObject.getString("tel"));
                 person.setUsername(peoname);
-                person.setEnddate(jsonObject.getString("endDate"));
+                person.setEnddate(date1);
                 person.save();
                 runOnUiThread(new Runnable() {
                     @Override
