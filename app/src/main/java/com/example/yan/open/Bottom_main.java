@@ -43,8 +43,8 @@ public class Bottom_main extends AppCompatActivity{
         bottom_navigation_bar
 //                .addItem(new BottomNavigationItem(R.drawable.home,"Like").setActiveColorResource(R.color.orange))
                 .addItem(new BottomNavigationItem(R.drawable.main_page,"Home").setActiveColorResource(R.color.blue))
-                .addItem(new BottomNavigationItem(R.drawable.mange,"mange").setActiveColorResource(R.color.blue))
-                .addItem(new BottomNavigationItem(R.drawable.me,"me").setActiveColorResource(R.color.blue))
+                .addItem(new BottomNavigationItem(R.drawable.mange,"Manage").setActiveColorResource(R.color.blue))
+                .addItem(new BottomNavigationItem(R.drawable.me,"Me").setActiveColorResource(R.color.blue))
                 .setFirstSelectedPosition(0)//设置默认选择的按钮
                 .initialise();//所有的设置需在调用该方法前完成
         pager.setCurrentItem(0);

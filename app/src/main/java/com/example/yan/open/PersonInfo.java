@@ -1,9 +1,13 @@
 package com.example.yan.open;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.DatePickerDialog;
+import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -13,10 +17,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -37,6 +43,7 @@ import org.litepal.crud.DataSupport;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +68,7 @@ import okhttp3.Response;
 
 public class PersonInfo extends AppCompatActivity {
     public static final int take_photo=1;
+    public static final int choose_photo =2;
     private Uri imageuri;
     private  EditText name,phone;
     private ImageView imageView;
@@ -98,7 +106,7 @@ public class PersonInfo extends AppCompatActivity {
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
                         .addFormDataPart("methodId","1")
                         .addFormDataPart("tel", phone.getText().toString())
-                        .addFormDataPart("endDate",dbutton.getText().toString()+" 00:00:00")
+                        .addFormDataPart("endDate",dbutton.getText().toString())
                         .addFormDataPart("password","1212")
                         .addFormDataPart("username",name.getText().toString())
                        // .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
@@ -250,7 +258,21 @@ public class PersonInfo extends AppCompatActivity {
         takeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                takePic();
+//                takePic();
+                AlertDialog.Builder builder = new AlertDialog.Builder(PersonInfo.this);// 创建alertDialog对象
+                builder.setTitle("请上传方式");
+                final String[] items = new String[] { "相机拍照", "相册挑选" };
+                builder.setItems(items,  new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(which==0){
+                            takePic();
+                        }
+                        else
+                            choosephoto();
+                    }
+                });
+                builder.show();
             }
         });
         saveButton.setOnClickListener(new View.OnClickListener() {
@@ -292,6 +314,31 @@ public class PersonInfo extends AppCompatActivity {
                 }
             }).start();
 
+        }
+    }
+    private void choosephoto(){
+        goodpic=false;
+        if(!name.getText().toString().equals("")) {
+            File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
+            if (!appDir.exists()) {
+                appDir.mkdir();
+            }
+            outputimage = new File(appDir, name.getText() + ".jpg");
+            if (outputimage.exists()) {
+                outputimage.delete();
+            }
+            try {
+                outputimage.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Intent intent = new Intent("android.intent.action.GET_CONTENT");
+            intent.setType("image/*");//相片类型
+            startActivityForResult(intent,2);
+        }
+        else{
+            TastyToast.makeText(MyApplication.getContext(), "请输入名字", TastyToast.LENGTH_LONG,
+                    TastyToast.WARNING);
         }
     }
     private void showDate(Calendar calendar){
@@ -387,6 +434,7 @@ public class PersonInfo extends AppCompatActivity {
         }
         return returnBm;
     }
+
     @Override
     protected void onActivityResult(int requestCode,int resultCode,Intent data){
         switch (requestCode){
@@ -398,8 +446,82 @@ public class PersonInfo extends AppCompatActivity {
                         goodpic=true;
                 }
                 break;
+            case choose_photo:
+                if(resultCode==RESULT_OK){
+                    if(Build.VERSION.SDK_INT>=19){
+                        handleImageOnKitKat(data);
+                    }
+                    else{
+                        handleImageBeforeKitKat(data);
+                    }
+                }
+                break;
             default:break;
         }
+    }
+    private void displayImage(String imagepath){
+        if(imagepath!=null){
+            Bitmap bitmap=BitmapFactory.decodeFile(imagepath);
+            imageView.setImageBitmap(bitmap);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);//这里压缩options%，把压缩后的数据存放到baos中
+            //压缩好后写入文件中
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(outputimage);
+                fos.write(baos.toByteArray());
+                fos.flush();
+                fos.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name.getText()+".jpg"),getSmallBitmap(outputimage,800,400));
+            compressImage(newbitmap);
+            goodpic=true;
+        }
+        else
+            TastyToast.makeText(MyApplication.getContext(), "fail to image", TastyToast.LENGTH_LONG,
+                    TastyToast.ERROR);
+    }
+    private void handleImageBeforeKitKat(Intent data) {
+        Uri uri=data.getData();
+        String imagePath=getImagepath(uri,null);
+    }
+    @TargetApi(19)
+    private void handleImageOnKitKat(Intent data) {
+        String imagepath=null;
+        Uri uri=data.getData();
+        if(DocumentsContract.isDocumentUri(this,uri)){
+            String docid=DocumentsContract.getDocumentId(uri);
+            if("com.android.providers.media.documents".equals(uri.getAuthority())){
+                String id=docid.split(":")[1];
+                String seletion=MediaStore.Images.Media._ID+"="+id;
+                imagepath=getImagepath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,seletion);
+            }
+            else if("com.android.providers.downloads.documents".equals(uri.getAuthority())){
+                Uri contenuri= ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docid));
+                imagepath=getImagepath(contenuri,null);
+            }
+        }
+        else if("content".equalsIgnoreCase(uri.getScheme())){
+            imagepath=getImagepath(uri,null);
+        }
+        else if("file".equalsIgnoreCase(uri.getScheme())){
+            imagepath=uri.getPath();
+        }
+        displayImage(imagepath);
+    }
+    private String getImagepath(Uri uri,String seletion){
+        String path=null;
+        Cursor cursor=getContentResolver().query(uri,null,seletion,null,null);
+        if(cursor!=null){
+            if(cursor.moveToFirst()){
+                path=cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+            cursor.close();
+        }
+        return path;
     }
     public void getUrlImage(String url) {
         try {
@@ -468,13 +590,14 @@ public class PersonInfo extends AppCompatActivity {
             int options = 100;
             while (baos.toByteArray().length / 1024 > 100) {    //循环判断如果压缩后图片是否大于100kb,大于继续压缩
                 baos.reset();//重置baos即清空baos
+                if(options>10)
                 options -= 10;//每次都减少10
+                else
+                    options--;
                 image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
-
             }
             //压缩好后写入文件中
             FileOutputStream fos = new FileOutputStream(outputimage);
-            Log.d("path", imageuri.getPath());
             fos.write(baos.toByteArray());
             fos.flush();
             fos.close();

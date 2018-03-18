@@ -20,20 +20,33 @@
             android:textSize="17dp" />
     </android.support.v7.widget.Toolbar>
 
-    <ListView
-        android:id="@+id/personlist"
+    <com.cjj.MaterialRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/refresh"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="500dp"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/toolbar">
+        android:layout_below="@+id/toolbar"
+        app:overlay="false"
+        app:wave_color="#69ACEE"
+        app:wave_height_type="normal"
+        app:wave_show="true">
 
-    </ListView>
+        <ListView
+            android:id="@+id/personlist"
+            android:layout_width="match_parent"
+            android:layout_height="512dp"
+            android:layout_alignParentStart="true">
+
+        </ListView>
+    </com.cjj.MaterialRefreshLayout>
+
     <com.gc.materialdesign.views.ButtonFloat
         android:id="@+id/add_person"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_above="@id/personlist"
+        android:layout_above="@id/refresh"
         android:layout_alignParentBottom="true"
         android:background="#FFFFD54F"
         materialdesign:animate="true"

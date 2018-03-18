@@ -18,6 +18,8 @@ import android.widget.AdapterView.*;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 //import com.gc.materialdesign.views.ButtonFloat;
+import com.cjj.MaterialRefreshLayout;
+import com.cjj.MaterialRefreshListener;
 import com.example.yan.open.other.SharedPreferencesUtils;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.sdsmdg.tastytoast.TastyToast;
@@ -49,6 +51,7 @@ public class PersonMange extends Fragment {
     private List<People> persondata=new ArrayList<>();
     private View mView;
     private ButtonFloat button_add;
+    private MaterialRefreshLayout materialRefreshLayout;
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (mView == null) {
@@ -61,11 +64,37 @@ public class PersonMange extends Fragment {
             persondata.add(new People("颜","访客",R.drawable.people3));
             persondata.add(new People("颜颜颜","常驻",R.drawable.people4));
 //            initperson();
+            materialRefreshLayout=mView.findViewById(R.id.refresh);
+            materialRefreshLayout.setMaterialRefreshListener(new MaterialRefreshListener() {
+                @Override
+                public void onRefresh(MaterialRefreshLayout materialRefreshLayout) {
+
+                }
+            });
             Toolbar toolbar=mView.findViewById(R.id.toolbar);
             toolbar.setTitle("人员管理");
             toolbar.setTitleTextColor(0xffffff);
             adapter=new PeopleAdapter(getActivity(),R.layout.people_item,persondata);
             listView.setAdapter(adapter);
+            materialRefreshLayout.setMaterialRefreshListener(new MaterialRefreshListener() {
+                @Override
+                public void onRefresh(MaterialRefreshLayout materialRefreshLayout) {
+                    persondata.add(new People("颜颜","常驻",R.drawable.people2));
+                    listView.setAdapter(adapter);
+                    final MaterialRefreshLayout temp=materialRefreshLayout;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            temp.finishRefresh();
+                        }
+                    }).start();
+                }
+            });
             button_add.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
