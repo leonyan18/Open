@@ -8,7 +8,6 @@ import android.widget.ImageView;
 
 public class Door {
     private String name;
-    private int imageid;
     public  Door(String name){
         this.name=name;
     }

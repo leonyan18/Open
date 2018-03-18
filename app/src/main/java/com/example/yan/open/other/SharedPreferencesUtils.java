@@ -1,4 +1,4 @@
-package com.example.yan.open;
+package com.example.yan.open.other;
 
 import android.content.Context;
 import android.content.SharedPreferences;

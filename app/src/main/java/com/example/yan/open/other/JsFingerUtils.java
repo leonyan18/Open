@@ -1,4 +1,4 @@
-package com.example.yan.open;
+package com.example.yan.open.other;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -12,6 +12,8 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.CancellationSignal;
 import android.support.v4.app.ActivityCompat;
+
+import com.example.yan.open.other.FingerListener;
 
 /**
  * Description: 指纹认证工具类

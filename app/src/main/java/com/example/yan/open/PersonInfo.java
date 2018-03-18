@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
-import android.media.FaceDetector;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,10 +27,9 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.guo.android_extend.image.ImageConverter;
+import com.example.yan.open.other.LoadingAlertDialog;
 import com.sdsmdg.tastytoast.TastyToast;
 
 import org.litepal.crud.DataSupport;
@@ -40,17 +37,12 @@ import org.litepal.crud.DataSupport;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Calendar;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
@@ -410,7 +402,6 @@ public class PersonInfo extends AppCompatActivity {
         }
     }
     public void getUrlImage(String url) {
-        Bitmap img = null;
         try {
             URL picurl = new URL(url);
             // 获得连接
@@ -420,8 +411,13 @@ public class PersonInfo extends AppCompatActivity {
             conn.setUseCaches(false);//不缓存
             conn.connect();
             InputStream is = conn.getInputStream();//获得图片的数据流
-            img = BitmapFactory.decodeStream(is);
-            imageView.setImageBitmap(img);
+            final Bitmap img = BitmapFactory.decodeStream(is);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageBitmap(img);
+                }
+            });
             is.close();
         } catch (Exception e) {
             e.printStackTrace();

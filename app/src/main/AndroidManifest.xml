@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DoorControl"
+            android:name=".Bottom_main"
             android:label="Open!"
             >
         </activity>

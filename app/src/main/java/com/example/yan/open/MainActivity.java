@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ActivityOptionsCompat oc2 = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this);
-                Intent intent=new Intent(MainActivity.this,DoorControl.class);
+                Intent intent=new Intent(MainActivity.this,Bottom_main.class);
                 startActivity(intent,oc2.toBundle());
                 finish();
 //                new Thread(new Runnable() {

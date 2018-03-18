@@ -5,4 +5,8 @@
     <color name="colorPrimaryDark">#2187EB</color>
     <color name="colorAccent">#161415</color>
     <color name="transparent">#2187EB</color>
+    <color name="orange">#FFFF8A65</color>
+    <color name="teal">#ff3d3e</color>
+    <color name="blue">#2187EB</color>
+    <color name="brown">#703d3e</color>
 </resources>

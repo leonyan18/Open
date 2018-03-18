@@ -7,7 +7,7 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
         <TextView
@@ -35,7 +35,7 @@
         android:layout_alignParentRight="true"
         android:layout_above="@id/personlist"
         android:layout_alignParentBottom="true"
-        android:background="#1E88E5"
+        android:background="#FFFFD54F"
         materialdesign:animate="true"
         materialdesign:iconDrawable="@drawable/ic_action_new" />
 

@@ -1,10 +1,12 @@
-package com.example.yan.open;
+package com.example.yan.open.other;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.example.yan.open.R;
 
 /**
  * Created by ACM-Yan on 2018/3/3.

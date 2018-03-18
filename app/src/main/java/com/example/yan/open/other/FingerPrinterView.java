@@ -1,4 +1,4 @@
-package com.example.yan.open;
+package com.example.yan.open.other;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -17,6 +17,8 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
+
+import com.example.yan.open.R;
 
 /**
  * Created by Zhangwh on 2016/12/29 0029.

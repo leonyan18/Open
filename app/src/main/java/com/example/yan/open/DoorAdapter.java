@@ -15,21 +15,14 @@ import java.util.List;
  */
 
 public class DoorAdapter extends ArrayAdapter<Door> {
-    private  int resourceId;
     public DoorAdapter(Context context, int textViewResourceId, List<Door>odjects){
         super(context,textViewResourceId,odjects);
-        resourceId=textViewResourceId;
     }
-    public View getView(int postion, View convertView, ViewGroup parent){
-        Door door=getItem(postion);
-        View view;
-        if (convertView==null)
-            view= LayoutInflater.from(getContext()).inflate(resourceId,parent,false);
-        else
-            view=convertView;
-        ImageView doorImage=view.findViewById(R.id.door_image);
-        TextView textView=view.findViewById(R.id.door_name);
-        textView.setText(door.getName());
-        return view;
+    @Override
+    public int getCount() {
+        // don't display last item. It is used as hint.
+        int count = super.getCount();
+        return count > 0 ? count - 1 : count;
     }
+
 }
