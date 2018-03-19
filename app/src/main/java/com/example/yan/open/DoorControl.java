@@ -25,6 +25,7 @@ import com.example.yan.open.other.FingerPrinterView;
 import com.example.yan.open.other.JsFingerUtils;
 import com.example.yan.open.other.SharedPreferencesUtils;
 import com.sdsmdg.tastytoast.TastyToast;
+import com.skyfishjy.library.RippleBackground;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,6 +67,10 @@ public class DoorControl extends Fragment {
             mySpinner=mView.findViewById(R.id.spinner);
             mySpinner.setAdapter(adapter);
             openbutton=mView.findViewById(R.id.open);
+            mView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            final RippleBackground rippleBackground=mView.findViewById(R.id.content);
+            rippleBackground.startRippleAnimation();
+            myanmi();
             openbutton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -220,7 +225,12 @@ public class DoorControl extends Fragment {
                 float value =(float) animation.getAnimatedValue();
                 canvas.drawCircle(openbutton.getX(),openbutton.getY(),openbutton.getWidth()/8*value,mRipplePaint);
                 mRipplePaint.setStrokeWidth(value);
-                mView.invalidate();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mView.invalidate();
+                    }
+                });
             }
         });
         va.start();
