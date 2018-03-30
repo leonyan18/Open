@@ -20,6 +20,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="114dp"
             app:srcCompat="@drawable/word" />
+
     </RelativeLayout>
 
     <LinearLayout

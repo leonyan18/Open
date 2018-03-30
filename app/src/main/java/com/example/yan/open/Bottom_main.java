@@ -11,6 +11,7 @@ import android.widget.RadioGroup;
 
 import com.ashokvarma.bottomnavigation.BottomNavigationBar;
 import com.ashokvarma.bottomnavigation.BottomNavigationItem;
+import com.sdsmdg.tastytoast.TastyToast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class Bottom_main extends AppCompatActivity{
     private List<Fragment> fragments;
     private RadioGroup radioGroup;
     private BottomNavigationBar bottom_navigation_bar;
+    private static int time=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +110,34 @@ public class Bottom_main extends AppCompatActivity{
 
             }
         });
+    }
+    @Override
+    public void onBackPressed(){
+        if(time==1){
+            finish();
+        }
+        time++;
+        if(time==1){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TastyToast.makeText(MyApplication.getContext(), "再按一次退出", TastyToast.LENGTH_SHORT,
+                                    TastyToast.DEFAULT);
+                        }
+                    });
+                    try {
+                        Thread.sleep(2000);
+                        time=0;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+        }
+
     }
 
     @Override

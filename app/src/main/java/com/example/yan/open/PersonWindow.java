@@ -12,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.example.yan.open.other.SharedPreferencesUtils;
 
@@ -25,10 +27,11 @@ import java.util.List;
 
 public class PersonWindow extends Fragment {
     private List<Opreation> opreationList=new ArrayList<>();
-    private ImageButton doorbt;
+    private ImageView personimg;
     private Button ch_user,exitbt;
     private AlertDialog dialog;
     private View mView;
+    private TextView textView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -37,6 +40,8 @@ public class PersonWindow extends Fragment {
             initOp();
             final OpreationAdapter opreationAdapter=new OpreationAdapter(getActivity(),R.layout.opreation_item,opreationList);
             ListView listView=mView.findViewById(R.id.listView);
+            personimg=mView.findViewById(R.id.perimg);
+            textView=mView.findViewById(R.id.myname);
             listView.setAdapter(opreationAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -92,6 +97,14 @@ public class PersonWindow extends Fragment {
                             dialog.show();
                         }
                     }
+                }
+            });
+            personimg.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent=new Intent(getActivity(),PersonInfo.class);
+                    intent.putExtra("data",textView.getText().toString());
+                    startActivityForResult(intent,1);
                 }
             });
             ch_user=mView.findViewById(R.id.chuser);

@@ -30,17 +30,19 @@
     <ImageView
         android:id="@+id/perface"
         android:layout_width="216dp"
-        android:layout_height="216dp"
+        android:layout_height="177dp"
         android:layout_gravity="center_horizontal"
         app:srcCompat="@drawable/account" />
 
 
     <LinearLayout
         android:id="@+id/linearLayout8"
-        android:layout_width="364dp"
-        android:layout_height="201dp"
+        android:layout_width="match_parent"
+        android:layout_height="253dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:background="#ffffff"
         android:orientation="vertical">
 
@@ -166,8 +168,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                app:theme="@style/cb_test"
-                android:text="常驻人员" />
+                android:text="常驻人员"
+                app:theme="@style/cb_test" />
 
             <View
                 android:layout_width="1dp"
@@ -182,9 +184,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_weight="1"
-                app:theme="@style/cb_test"
+                android:text="访客"
 
-                android:text="访客" />
+                app:theme="@style/cb_test" />
 
         </LinearLayout>
 
@@ -232,6 +234,48 @@
                 android:background="#2187EB"
                 android:text="日期选择"
                 android:textColor="#ffffff" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:background="#90909090" />
+
+        <LinearLayout
+            android:id="@+id/linearpass"
+            android:layout_width="match_parent"
+            android:layout_height="37dp"
+            android:orientation="horizontal"
+            tools:layout_editor_absoluteX="8dp"
+            tools:layout_editor_absoluteY="297dp">
+
+            <TextView
+                android:layout_width="61dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:text="密码 :"
+                android:textColor="#000000"
+                android:textSize="15dp" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="fill_parent"
+                android:layout_marginBottom="5dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="5dp"
+                android:background="#90909090" />
+
+            <EditText
+                android:id="@+id/password"
+                android:layout_width="272dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:inputType="textPersonName" />
+
         </LinearLayout>
 
         <View

@@ -33,7 +33,7 @@ public class PeopleAdapter extends ArrayAdapter<People> {
         TextView slabel=view.findViewById(R.id.label);
         ImageView imageView=view.findViewById(R.id.imgpeo);
         name.setText(people.getName());
-        imageView.setImageResource(people.getImage());
+        imageView.setImageBitmap(people.getImage());
         slabel.setText(people.getSlabel());
         return view;
     }

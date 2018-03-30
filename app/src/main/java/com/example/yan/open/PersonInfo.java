@@ -25,6 +25,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -38,6 +39,8 @@ import android.widget.Toast;
 import com.example.yan.open.other.LoadingAlertDialog;
 import com.sdsmdg.tastytoast.TastyToast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.litepal.crud.DataSupport;
 
 import java.io.BufferedOutputStream;
@@ -70,7 +73,7 @@ public class PersonInfo extends AppCompatActivity {
     public static final int take_photo=1;
     public static final int choose_photo =2;
     private Uri imageuri;
-    private  EditText name,phone;
+    private  EditText name,phone,password;
     private ImageView imageView;
     private Intent intent;
     private CheckBox checkBox1L,checkBox2S;
@@ -79,7 +82,7 @@ public class PersonInfo extends AppCompatActivity {
     private File outputimage;
     private LoadingAlertDialog dialog;
     private boolean goodpic;
-    private String data;
+    private String data,methodId="1";
     private Person person;
     private DatePickerDialog.OnDateSetListener mdateListener = new DatePickerDialog.OnDateSetListener() {
 
@@ -104,24 +107,24 @@ public class PersonInfo extends AppCompatActivity {
                         .setType(MultipartBody.FORM)
                         .addPart(Headers.of("Content-Disposition", "form-data; name=\"image\"; filename=\""+name.getText()+".jpg\""),
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
-                        .addFormDataPart("methodId","1")
+                        .addFormDataPart("methodId",methodId)
                         .addFormDataPart("tel", phone.getText().toString())
                         .addFormDataPart("endDate",dbutton.getText().toString())
-                        .addFormDataPart("password","1212")
+                        .addFormDataPart("password",password.getText().toString())
                         .addFormDataPart("username",name.getText().toString())
                        // .addFormDataPart("id",SharedPreferencesUtils.getData(MyApplication.getContext(),"user"," "))
-                        .addFormDataPart("id","0")
+                        .addFormDataPart("id","1010101")
                         .build();
                 Request request;
                 if(data.equals("no")){
                     request = new Request.Builder()
-                            .url("http://192.168.0.122:8080/api/user")
+                            .url(Data.getAddress()+"/api/user")
                             .post(body)
                             .build();
                 }
                 else{
                     request = new Request.Builder()
-                            .url("http://192.168.0.122:8080/api/userUpdate/"+person.getUserid())
+                            .url(Data.getAddress()+"/api/userUpdate/"+person.getUserid())
                             .post(body)
                             .build();
                 }
@@ -133,18 +136,39 @@ public class PersonInfo extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(MyApplication.getContext(),"连接超时请检查网络",Toast.LENGTH_SHORT).show();
+                                TastyToast.makeText(MyApplication.getContext(), "连接超时", TastyToast.LENGTH_LONG,
+                                        TastyToast.ERROR);
                             }
                         });
 
                     }
-
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                       Log.d("onResponse",response.body().string());
-                        intent.putExtra("or",true);
-                        finish();
-                        dialog.dismiss();
+                        String jsonresponse=response.body().string();
+                        String message=null;
+                        try {
+                            JSONObject json=new JSONObject(jsonresponse);
+                            message=json.getString("message");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Log.d("41231",jsonresponse);
+                        if(message.equals("success")){
+                            setResult(-1);
+                            dialog.dismiss();
+                            finish();
+                        }
+                        else{
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.dismiss();
+                                    TastyToast.makeText(MyApplication.getContext(), "未检测到人脸", TastyToast.LENGTH_LONG,
+                                            TastyToast.WARNING);
+                                }
+                            });
+                        }
+
                     }
 
                 });
@@ -152,7 +176,7 @@ public class PersonInfo extends AppCompatActivity {
         }).start();
     }
     private Boolean check(){
-        if(goodpic&&name.getText().equals("")&&phone.getText().equals("")){
+        if(goodpic&&!name.getText().equals("")&&isMobile(phone.getText().toString())&&!phone.getText().equals("")&&!password.getText().equals("")){
             if(checkBox1L.isChecked()){
                 kind=0;
                 return true;
@@ -171,8 +195,7 @@ public class PersonInfo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.info);
-        intent=new Intent();
-        intent.putExtra("or",false);
+        password=findViewById(R.id.password);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         builder.detectFileUriExposure();
@@ -278,13 +301,14 @@ public class PersonInfo extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                intent.putExtra("newperson",name.getText().toString());
-                setResult(RESULT_OK,intent);
                 if(!goodpic)
                     TastyToast.makeText(MyApplication.getContext(), "请上传一张有效照片", TastyToast.LENGTH_LONG,
                             TastyToast.WARNING);
-                else if(check())
-                    TastyToast.makeText(MyApplication.getContext(), "请完善信息", TastyToast.LENGTH_LONG,
+                else if(!check())
+                    if(!isMobile(phone.getText().toString()))
+                        TastyToast.makeText(MyApplication.getContext(), "请填写正确的手机号", TastyToast.LENGTH_LONG,
+                                TastyToast.WARNING);
+                    else TastyToast.makeText(MyApplication.getContext(), "请完善信息", TastyToast.LENGTH_LONG,
                             TastyToast.WARNING);
                 else{
                     upload();
@@ -294,6 +318,8 @@ public class PersonInfo extends AppCompatActivity {
         Intent intent=getIntent();
         data=intent.getStringExtra("data");
         if(!data.equals("no")){
+            methodId="2";
+            goodpic=true;
             person = DataSupport.where("username = ?", data).findFirst(Person.class);
             dbutton.setText(person.getEnddate());
             if(person.getEnddate().equals("9999-12-30")){
@@ -306,14 +332,37 @@ public class PersonInfo extends AppCompatActivity {
             }
             name.setText(person.getUsername());
             phone.setText(person.getTel());
-            Log.d("image", "onCreate: "+"http://192.168.0.122:8080/images/"+person.getUserid()+".jpg");
+            password.setText(person.getPassword());
+            Log.d("image", "onCreate: "+Data.getAddress()+"/images/"+person.getUserid()+".jpg");
+            File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
+            if (!appDir.exists()) {
+                appDir.mkdir();
+            }
+            outputimage = new File(appDir,name.getText()+".jpg");
+            if(outputimage.exists()){
+                outputimage.delete();
+            }
+            try {
+                outputimage.createNewFile();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    getUrlImage("http://192.168.0.122:8080/images/"+person.getUserid()+".jpg");
+                    getUrlImage(Data.getAddress()+"/images/"+person.getUserid()+".jpg");
                 }
             }).start();
 
+        }
+    }
+    private static boolean isMobile(String number) {
+        String num = "[1][34578]\\d{9}";//"[1]"代表第1位为数字1，"[34578]"代表第二位可以为3、4、5、7、8中的一个，"\\d{9}"代表后面是可以是0～9的数字，有9位。
+        if (TextUtils.isEmpty(number)) {
+            return false;
+        } else {
+            //matches():字符串是否在给定的正则表达式匹配
+            return number.matches(num);
         }
     }
     private void choosephoto(){
@@ -534,6 +583,7 @@ public class PersonInfo extends AppCompatActivity {
             conn.connect();
             InputStream is = conn.getInputStream();//获得图片的数据流
             final Bitmap img = BitmapFactory.decodeStream(is);
+            compressImage(img);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

@@ -23,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String address=login.getText().toString();
+                Data.setAddress(address);
                 ActivityOptionsCompat oc2 = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this);
                 Intent intent=new Intent(MainActivity.this,Bottom_main.class);
                 startActivity(intent,oc2.toBundle());
