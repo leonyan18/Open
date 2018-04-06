@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Open!</string>
+    <string name="app_name">coldcode</string>
     <string name="person">基本信息</string>
     <string name="personmange">人员管理</string>
     <string name="write">信息填写</string>

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.hardware.fingerprint.FingerprintManager;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,13 +17,17 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.yan.open.other.FingerListener;
 import com.example.yan.open.other.FingerPrinterView;
+import com.example.yan.open.other.InputPwdView;
 import com.example.yan.open.other.JsFingerUtils;
+import com.example.yan.open.other.MyInputPwdUtil;
 import com.example.yan.open.other.SharedPreferencesUtils;
 import com.sdsmdg.tastytoast.TastyToast;
 import com.skyfishjy.library.RippleBackground;
@@ -45,16 +50,17 @@ import okhttp3.Response;
  */
 
 public class DoorControl extends Fragment {
+    private LocationManager locationManager;
     private ImageButton personal;
     private List<String> doorList=new ArrayList<String>();
     private JsFingerUtils jsFingerUtils;
     private AlertDialog dialog;
     private View mView;
-    private ListView listView;
+    private View line;
+    private ImageView imageView;
     private Spinner mySpinner;
     private ImageButton openbutton;
-    private Paint mRipplePaint;
-    private Canvas canvas;
+    private MyInputPwdUtil myInputPwdUtil;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,16 +71,38 @@ public class DoorControl extends Fragment {
             ArrayAdapter<String> adapter=new ArrayAdapter<String>(getActivity(),android.R.layout.simple_spinner_item,doorList);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             mySpinner=mView.findViewById(R.id.spinner);
+            imageView=mView.findViewById(R.id.imageView5);
+            line=mView.findViewById(R.id.line);
             mySpinner.setAdapter(adapter);
+            if(Bottom_main.kind==0){
+                mySpinner.setVisibility(View.INVISIBLE);
+                imageView.setVisibility(View.INVISIBLE);
+                line.setVisibility(View.INVISIBLE);
+            }
             openbutton=mView.findViewById(R.id.open);
             mView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            myInputPwdUtil=new MyInputPwdUtil(getContext());
+            myInputPwdUtil.getMyInputDialogBuilder().setAnimStyle(R.style.dialog_anim);
+            myInputPwdUtil.setListener(new InputPwdView.InputPwdListener() {
+                @Override
+                public void hide() {
+                    myInputPwdUtil.hide();
+                }
+
+                @Override
+                public void forgetPwd() {
+                }
+
+                @Override
+                public void finishPwd(String pwd) {
+                }
+            });
+            first();
             final RippleBackground rippleBackground=mView.findViewById(R.id.content);
             rippleBackground.startRippleAnimation();
-            myanmi();
             openbutton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    myanmi();
                     if(SharedPreferencesUtils.getData(MyApplication.getContext(),"openFinger",false)){
                         jsFingerUtils = new JsFingerUtils(getActivity());
                         final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -151,27 +179,7 @@ public class DoorControl extends Fragment {
                         });
                     }
                     else {
-                        final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                        builder.setTitle("指纹识别");
-                        //    通过LayoutInflater来加载一个xml的布局文件作为一个View对象
-                        View viewf = LayoutInflater.from(getActivity()).inflate(R.layout.pass_door, null);
-                        builder.setTitle("请输入登录密码");
-                        builder.setView(viewf);
-                        final EditText text=viewf.findViewById(R.id.doorkey);
-                        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.cancel();
-                            }
-                        });
-                        builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                text.getText();
-                            }
-                        });
-                        builder.show();
+                        myInputPwdUtil.show();
 
                     }
                 }
@@ -209,31 +217,6 @@ public class DoorControl extends Fragment {
                     .create();
             dialog.show();
         }
-    }
-    private  void myanmi(){
-        mRipplePaint=new Paint();
-        canvas=new Canvas();
-        mRipplePaint.setStyle(Paint.Style.STROKE);
-        mRipplePaint.setStrokeWidth(0);
-        View view=new View(getActivity());
-        mRipplePaint.setColor(getResources().getColor(R.color.colorPrimary));
-        ValueAnimator va = ValueAnimator.ofFloat(4,5);
-        va.setDuration(1000);
-        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                float value =(float) animation.getAnimatedValue();
-                canvas.drawCircle(openbutton.getX(),openbutton.getY(),openbutton.getWidth()/8*value,mRipplePaint);
-                mRipplePaint.setStrokeWidth(value);
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mView.invalidate();
-                    }
-                });
-            }
-        });
-        va.start();
     }
     private void openDoor(){
         OkHttpClient client=new OkHttpClient.Builder()

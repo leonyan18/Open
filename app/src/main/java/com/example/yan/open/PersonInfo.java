@@ -144,18 +144,17 @@ public class PersonInfo extends AppCompatActivity {
                     }
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        String jsonresponse=response.body().string();
-                        String message=null;
-                        try {
-                            JSONObject json=new JSONObject(jsonresponse);
-                            message=json.getString("message");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d("41231",jsonresponse);
-                        if(message.equals("success")){
+                        String message=response.body().string();
+                        Log.d("onResponse", "onResponse: "+message);
+                        if(message.equals("更新成功")){
                             setResult(-1);
-                            dialog.dismiss();
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.dismiss();
+                                }
+                            });
                             finish();
                         }
                         else{

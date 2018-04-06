@@ -65,11 +65,13 @@ public class PersonMange extends Fragment {
             button_add=mView.findViewById(R.id.add_person);
             listView=mView.findViewById(R.id.personlist);
 
-            persondata.add(new People("颜颜颜颜","访客",BitmapFactory.decodeResource(getResources(),R.drawable.people1)));
-            persondata.add(new People("颜颜","常驻",BitmapFactory.decodeResource(getResources(),R.drawable.people2)));
-            persondata.add(new People("颜","访客",BitmapFactory.decodeResource(getResources(),R.drawable.people3)));
-            persondata.add(new People("颜颜颜","常驻",BitmapFactory.decodeResource(getResources(),R.drawable.people4)));
-//            initperson();
+            persondata.add(new People("mark","访客",BitmapFactory.decodeResource(getResources(),R.drawable.people1)));
+            persondata.add(new People("dalao","常驻",BitmapFactory.decodeResource(getResources(),R.drawable.people2)));
+            persondata.add(new People("戴霸天","访客",BitmapFactory.decodeResource(getResources(),R.drawable.people3)));
+            persondata.add(new People("Alice","常驻",BitmapFactory.decodeResource(getResources(),R.drawable.people4)));
+            adapter=new PeopleAdapter(getActivity(),R.layout.people_item,persondata);
+            listView.setAdapter(adapter);
+//          initperson();
             materialRefreshLayout=mView.findViewById(R.id.refresh);
             Toolbar toolbar=mView.findViewById(R.id.toolbar);
             toolbar.setTitle("人员管理");

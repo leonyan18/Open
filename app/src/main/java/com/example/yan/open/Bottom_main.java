@@ -26,6 +26,10 @@ public class Bottom_main extends AppCompatActivity{
     private RadioGroup radioGroup;
     private BottomNavigationBar bottom_navigation_bar;
     private static int time=0;
+    public static int kind=0;
+    public static void setKind(int kind1){
+        kind=kind1;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

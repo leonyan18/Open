@@ -9,4 +9,6 @@
     <color name="teal">#ff3d3e</color>
     <color name="blue">#2187EB</color>
     <color name="brown">#703d3e</color>
+    <color name="myInputPwdBase_blue">#0887ee</color>
+    <color name="myInputPwdBase_gray">#f0f0f6</color>
 </resources>

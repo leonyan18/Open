@@ -138,8 +138,14 @@ public class PersonWindow extends Fragment {
         opreationList.add(history);
         Opreation change=new Opreation("修改密码",R.drawable.change);
         opreationList.add(change);
-        Opreation pass=new Opreation("开启指纹",R.drawable.finger);
-        opreationList.add(pass);
+        if(SharedPreferencesUtils.getData(MyApplication.getContext(), "openFinger", false)){
+            Opreation pass=new Opreation("开启指纹",R.drawable.finger);
+            opreationList.add(pass);
+        }
+        else{
+            Opreation pass=new Opreation("关闭指纹",R.drawable.finger);
+            opreationList.add(pass);
+        }
         Opreation back=new Opreation("用户反馈",R.drawable.back);
         opreationList.add(back);
     }
