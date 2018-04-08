@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -52,7 +51,7 @@ public class PersonWindow extends Fragment {
                             dialog = new AlertDialog.Builder(getActivity())
                                     .setTitle("提示")
                                     .setMessage("\n   是否开启指纹开门")
-                                    .setIcon(R.drawable.finger)
+                                    .setIcon(R.drawable.finger1)
                                     .setCancelable(false)
                                     .setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
@@ -76,7 +75,7 @@ public class PersonWindow extends Fragment {
                             dialog = new AlertDialog.Builder(getActivity())
                                     .setTitle("提示")
                                     .setMessage("\n   是否关闭指纹开门")
-                                    .setIcon(R.drawable.finger)
+                                    .setIcon(R.drawable.finger1)
                                     .setCancelable(false)
                                     .setNegativeButton("取消", new DialogInterface.OnClickListener() {
 
@@ -139,11 +138,11 @@ public class PersonWindow extends Fragment {
         Opreation change=new Opreation("修改密码",R.drawable.change);
         opreationList.add(change);
         if(SharedPreferencesUtils.getData(MyApplication.getContext(), "openFinger", false)){
-            Opreation pass=new Opreation("开启指纹",R.drawable.finger);
+            Opreation pass=new Opreation("开启指纹",R.drawable.finger1);
             opreationList.add(pass);
         }
         else{
-            Opreation pass=new Opreation("关闭指纹",R.drawable.finger);
+            Opreation pass=new Opreation("关闭指纹",R.drawable.finger1);
             opreationList.add(pass);
         }
         Opreation back=new Opreation("用户反馈",R.drawable.back);

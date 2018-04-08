@@ -346,12 +346,26 @@ public class PersonInfo extends AppCompatActivity {
             }catch (IOException e){
                 e.printStackTrace();
             }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    getUrlImage(Data.getAddress()+"/images/"+person.getUserid()+".jpg");
-                }
-            }).start();
+            if(person.getUsername().equals("mark")){
+                imageView.setImageResource(R.drawable.people1);
+            }
+            else if(person.getUsername().equals("dalao")){
+                imageView.setImageResource(R.drawable.people2);
+            }
+            else if(person.getUsername().equals("戴霸天")){
+                imageView.setImageResource(R.drawable.people3);
+            }
+            else if(person.getUsername().equals("Alice")){
+                imageView.setImageResource(R.drawable.people4);
+            }
+            else{
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        getUrlImage(Data.getAddress()+"/images/"+person.getUserid()+".jpg");
+                    }
+                }).start();
+            }
 
         }
     }

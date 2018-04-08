@@ -71,6 +71,11 @@ public class PersonMange extends Fragment {
             persondata.add(new People("Alice","常驻",BitmapFactory.decodeResource(getResources(),R.drawable.people4)));
             adapter=new PeopleAdapter(getActivity(),R.layout.people_item,persondata);
             listView.setAdapter(adapter);
+            showsp("mark");
+            showsp("dalao");
+            showsp("戴霸天");
+            showsp("Alice");
+            showsp("cheece");
 //          initperson();
             materialRefreshLayout=mView.findViewById(R.id.refresh);
             Toolbar toolbar=mView.findViewById(R.id.toolbar);
@@ -121,6 +126,15 @@ public class PersonMange extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         ((ViewGroup) mView.getParent()).removeView(mView);
+    }
+    public void showsp(String peoname){
+        Person person=new Person();
+        person.setUserid("");
+        person.setTel("");
+        person.setPassword("");
+        person.setUsername(peoname);
+        person.setEnddate("9999/12/30");
+        person.save();
     }
     public boolean onContextItemSelected(MenuItem item) {
         final AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
