@@ -2,10 +2,13 @@ package com.example.yan.open;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +19,25 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.yan.open.other.SharedPreferencesUtils;
+import com.sdsmdg.tastytoast.TastyToast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.litepal.crud.DataSupport;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by yan on 2018/1/30.
@@ -33,14 +52,18 @@ public class PersonWindow extends Fragment {
     private TextView textView;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (mView == null) {
+            initperson();
             mView = inflater.inflate(R.layout.personwindow, container, false);
             initOp();
             final OpreationAdapter opreationAdapter=new OpreationAdapter(getActivity(),R.layout.opreation_item,opreationList);
             ListView listView=mView.findViewById(R.id.listView);
             personimg=mView.findViewById(R.id.perimg);
             textView=mView.findViewById(R.id.myname);
+//            Person person=DataSupport.where("username = ?", textView.getText().toString()).findFirst(Person.class);
+//            personimg.setImageBitmap(getUrlImage(Data.getAddress()+"/images/"+person.getUserid()+".jpg"));
+//            Log.d("123", "onCreateView: "+getUrlImage(Data.getAddress()+"/images/"+person.getUserid()+".jpg"));
             listView.setAdapter(opreationAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -103,6 +126,7 @@ public class PersonWindow extends Fragment {
                 public void onClick(View v) {
                     Intent intent=new Intent(getActivity(),PersonInfo.class);
                     intent.putExtra("data",textView.getText().toString());
+                    intent.putExtra("me",true);
                     startActivityForResult(intent,1);
                 }
             });
@@ -147,5 +171,106 @@ public class PersonWindow extends Fragment {
         }
         Opreation back=new Opreation("用户反馈",R.drawable.back);
         opreationList.add(back);
+    }
+    private  void initperson(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                OkHttpClient client=new OkHttpClient.Builder()
+                        .connectTimeout(4, TimeUnit.SECONDS)
+                        .readTimeout(20, TimeUnit.SECONDS)
+                        .build();  //创建OkHttpClient对象。
+                Request request=new Request.Builder()
+                        .url(Data.getAddress()+"/api/user/1010101")
+                        .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                TastyToast.makeText(MyApplication.getContext(), "连接超时", TastyToast.LENGTH_LONG,
+                                        TastyToast.ERROR);
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        pareseJsonchange(response.body().string());
+                    }
+                });
+            }
+        }).start();
+    }
+    private void pareseJsonchange(String jsonData){
+        try {
+            Log.d("pareseJsonchange: ", jsonData);
+            JSONObject json=new JSONObject(jsonData);
+                final String peoname=json.getString("username");
+                String id=json.getString("id");
+                String date1=json.getString("endDate");
+                String tel=json.getString("tel");
+                String password=json.getString("password");
+                date1=date1.substring(0,10);
+                if(DataSupport.where("userid = ?", id).findFirst(Person.class)==null){
+                    Person person=new Person();
+                    person.setUserid(id);
+                    person.setTel(tel);
+                    person.setPassword(password);
+                    person.setUsername(peoname);
+                    person.setEnddate(date1);
+                    person.save();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textView.setText(peoname);
+                        }
+                    });
+                }
+                else{
+                    Person person=DataSupport.where("userid = ?", id).findFirst(Person.class);
+                    person.setTel(tel);
+                    person.setPassword(password);
+                    person.setUsername(peoname);
+                    person.setEnddate(date1);
+                    person.save();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textView.setText(peoname);
+                        }
+                    });
+//                    ContentValues values = new ContentValues();
+//                    values.put("tel", tel);
+//                    values.put("password",password);
+//                    values.put("endData",date1);
+//                    values.put("username",peoname);
+//                    DataSupport.updateAll(Person.class, values, "userid = ?", id);
+                }
+
+                SharedPreferencesUtils.saveData(MyApplication.getContext(),peoname,id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public Bitmap getUrlImage(String url) {
+        Bitmap img=null;
+        try {
+            URL picurl = new URL(url);
+            // 获得连接
+            HttpURLConnection conn = (HttpURLConnection)picurl.openConnection();
+            conn.setConnectTimeout(6000);//设置超时
+            conn.setDoInput(true);
+            conn.setUseCaches(false);//不缓存
+            conn.connect();
+            InputStream is = conn.getInputStream();//获得图片的数据流
+            img = BitmapFactory.decodeStream(is);
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return img;
     }
 }

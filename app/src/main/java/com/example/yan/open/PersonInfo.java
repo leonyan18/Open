@@ -83,7 +83,9 @@ public class PersonInfo extends AppCompatActivity {
     private LoadingAlertDialog dialog;
     private boolean goodpic;
     private String data,methodId="1";
+    private Boolean me;
     private Person person;
+    private String id;
     private DatePickerDialog.OnDateSetListener mdateListener = new DatePickerDialog.OnDateSetListener() {
 
         @Override
@@ -102,7 +104,7 @@ public class PersonInfo extends AppCompatActivity {
                         .readTimeout(20, TimeUnit.SECONDS)
                         .build();  //创建OkHttpClient对象。
                 File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
-                File file = new File(appDir,name.getText()+".jpg");
+                File file = new File(appDir,"temp.jpg");
                 RequestBody  body = new MultipartBody.Builder("AaB03x")
                         .setType(MultipartBody.FORM)
                         .addPart(Headers.of("Content-Disposition", "form-data; name=\"image\"; filename=\""+name.getText()+".jpg\""),
@@ -117,14 +119,23 @@ public class PersonInfo extends AppCompatActivity {
                         .build();
                 Request request;
                 if(data.equals("no")){
-                    request = new Request.Builder()
-                            .url(Data.getAddress()+"/api/user")
-                            .post(body)
-                            .build();
+                    if(me==false){
+                        request = new Request.Builder()
+                                .url(Data.getAddress()+"/api/user")
+                                .post(body)
+                                .build();
+                    }
+                    else {
+                        request = new Request.Builder()
+                                .url(Data.getAddress()+"/api/users")
+                                .post(body)
+                                .build();
+                    }
+
                 }
                 else{
                     request = new Request.Builder()
-                            .url(Data.getAddress()+"/api/userUpdate/"+person.getUserid())
+                            .url(Data.getAddress()+"/api/userUpdate/"+id)
                             .post(body)
                             .build();
                 }
@@ -144,25 +155,48 @@ public class PersonInfo extends AppCompatActivity {
                     }
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        String message=response.body().string();
+                        final String message=response.body().string();
+                        String cz=null;
+                        String id=null;
+                        JSONObject json=null;
                         Log.d("onResponse", "onResponse: "+message);
+                        try {
+                            json=new JSONObject(message);
+                            cz=json.getString("message");
+                            id=json.getString("id");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         if(message.equals("更新成功")){
                             setResult(-1);
 
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    TastyToast.makeText(MyApplication.getContext(), message, TastyToast.LENGTH_LONG,
+                                            TastyToast.SUCCESS);
                                     dialog.dismiss();
                                 }
                             });
                             finish();
+                        }
+                        else if(cz.equals("success")){
+                            final String yid=id;
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    TastyToast.makeText(MyApplication.getContext(),"您的id："+yid, TastyToast.LENGTH_LONG,
+                                            TastyToast.SUCCESS);
+                                    dialog.dismiss();
+                                }
+                            });
                         }
                         else{
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     dialog.dismiss();
-                                    TastyToast.makeText(MyApplication.getContext(), "未检测到人脸", TastyToast.LENGTH_LONG,
+                                    TastyToast.makeText(MyApplication.getContext(), message, TastyToast.LENGTH_LONG,
                                             TastyToast.WARNING);
                                 }
                             });
@@ -236,7 +270,7 @@ public class PersonInfo extends AppCompatActivity {
                     checkBox2S.setChecked(false);
                 }
                 if(checkBox1L.isChecked()){
-                    dbutton.setText("9999-12-30");
+                    dbutton.setText("9999-12-31");
                     dbutton.setClickable(false);
                 }
             }
@@ -316,12 +350,13 @@ public class PersonInfo extends AppCompatActivity {
         });
         Intent intent=getIntent();
         data=intent.getStringExtra("data");
+        me=intent.getBooleanExtra("me",false);
         if(!data.equals("no")){
             methodId="2";
             goodpic=true;
             person = DataSupport.where("username = ?", data).findFirst(Person.class);
             dbutton.setText(person.getEnddate());
-            if(person.getEnddate().equals("9999-12-30")){
+            if(person.getEnddate().equals("9999-12-31")){
                 checkBox2S.setChecked(false);
                 checkBox1L.setChecked(true);
             }
@@ -329,6 +364,7 @@ public class PersonInfo extends AppCompatActivity {
                 checkBox2S.setChecked(true);
                 checkBox1L.setChecked(false);
             }
+            id=person.getUserid();
             name.setText(person.getUsername());
             phone.setText(person.getTel());
             password.setText(person.getPassword());

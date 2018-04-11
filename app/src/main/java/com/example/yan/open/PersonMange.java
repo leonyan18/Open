@@ -133,7 +133,7 @@ public class PersonMange extends Fragment {
         person.setTel("");
         person.setPassword("");
         person.setUsername(peoname);
-        person.setEnddate("9999/12/30");
+        person.setEnddate("9999/12/31");
         person.save();
     }
     public boolean onContextItemSelected(MenuItem item) {
@@ -184,8 +184,6 @@ public class PersonMange extends Fragment {
             case 1:
                 if(resultCode==-1){
                         initperson();
-                        TastyToast.makeText(MyApplication.getContext(), "上传成功", TastyToast.LENGTH_LONG,
-                                TastyToast.SUCCESS);
                         break;
                 }
             default:break;
@@ -245,6 +243,7 @@ public class PersonMange extends Fragment {
                     person.setPassword(password);
                     person.setUsername(peoname);
                     person.setEnddate(date1);
+                    Log.d("endDate", "pareseJsonchange: 1"+date1);
                     person.save();
                 }
                 else{
@@ -253,6 +252,7 @@ public class PersonMange extends Fragment {
                     person.setPassword(password);
                     person.setUsername(peoname);
                     person.setEnddate(date1);
+                    Log.d("endDate", "pareseJsonchange: 2"+date1);
                     person.save();
 //                    ContentValues values = new ContentValues();
 //                    values.put("tel", tel);
@@ -264,6 +264,7 @@ public class PersonMange extends Fragment {
 
                 SharedPreferencesUtils.saveData(MyApplication.getContext(),peoname,id);
                 persondata.add(new People(peoname,"访客",getUrlImage(Data.getAddress()+"/images/"+id+".jpg")));
+                Log.d("icon", "pareseJsonchange: "+Data.getAddress()+"/images/"+id+".jpg");
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

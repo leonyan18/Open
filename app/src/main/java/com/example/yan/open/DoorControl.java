@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.hardware.fingerprint.FingerprintManager;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -33,6 +34,8 @@ import com.sdsmdg.tastytoast.TastyToast;
 import com.skyfishjy.library.RippleBackground;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -95,9 +98,12 @@ public class DoorControl extends Fragment {
 
                 @Override
                 public void finishPwd(String pwd) {
+                    TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
+                            TastyToast.SUCCESS);
+                    myInputPwdUtil.hide();
+                    openDoor();
                 }
             });
-            first();
             final RippleBackground rippleBackground=mView.findViewById(R.id.content);
             rippleBackground.startRippleAnimation();
             openbutton.setOnClickListener(new View.OnClickListener() {
@@ -158,7 +164,7 @@ public class DoorControl extends Fragment {
                             @Override
                             public void onChange(int state) {
                                 if (state == FingerPrinterView.STATE_CORRECT_PWD) {
-                                    TastyToast.makeText(MyApplication.getContext(), "指纹识别成功", TastyToast.LENGTH_LONG,
+                                    TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
                                             TastyToast.SUCCESS);
                                     dialog.dismiss();
                                     openDoor();
@@ -225,7 +231,8 @@ public class DoorControl extends Fragment {
                 .build();
         RequestBody body = RequestBody.create(MediaType.parse("text/plain; charset=utf-8"), "1212");
         Request request=new Request.Builder()
-                .url("http://192.168.0.122:8080/api/open/"+"12345"+"/"+"12#4")
+//                .url("http://192.168.0.122:8080/api/open/"+"1010101/"+ Uri.encode("二号楼1单元"))
+                .url("http://192.168.0.122:8080/api/open/"+"1010101/"+ "二号楼1单元")
                 .build();
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -235,9 +242,16 @@ public class DoorControl extends Fragment {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                if (response.body().string().contains("success")){
-                    TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
-                            TastyToast.SUCCESS);
+                String ans=response.body().string();
+                Log.d("onResponse", "onResponse: "+ans);
+                if (ans.equals("开门成功")){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
+                                    TastyToast.SUCCESS);
+                        }
+                    });
                 }
 
 
