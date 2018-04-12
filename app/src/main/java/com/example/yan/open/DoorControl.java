@@ -164,8 +164,6 @@ public class DoorControl extends Fragment {
                             @Override
                             public void onChange(int state) {
                                 if (state == FingerPrinterView.STATE_CORRECT_PWD) {
-                                    TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
-                                            TastyToast.SUCCESS);
                                     dialog.dismiss();
                                     openDoor();
                                 }
