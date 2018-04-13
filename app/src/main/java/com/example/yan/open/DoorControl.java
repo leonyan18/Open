@@ -98,8 +98,6 @@ public class DoorControl extends Fragment {
 
                 @Override
                 public void finishPwd(String pwd) {
-                    TastyToast.makeText(MyApplication.getContext(), "开门成功", TastyToast.LENGTH_LONG,
-                            TastyToast.SUCCESS);
                     myInputPwdUtil.hide();
                     openDoor();
                 }
