@@ -1,8 +1,13 @@
 package com.example.yan.open;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -36,6 +41,19 @@ public class Bottom_main extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bottom_main);
         initView();
+        if(Build.VERSION.SDK_INT>=23){
+            //判断是否有这个权限
+            if(ContextCompat.checkSelfPermission(Bottom_main.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED||ContextCompat.checkSelfPermission(Bottom_main.this, Manifest.permission.INTERNET)!=PackageManager.PERMISSION_GRANTED){
+                //第一请求权限被取消显示的判断，一般可以不写
+                if (ActivityCompat.shouldShowRequestPermissionRationale(Bottom_main.this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)&&ActivityCompat.shouldShowRequestPermissionRationale(Bottom_main.this,
+                        Manifest.permission.INTERNET)){
+                }else {
+                    //2、申请权限: 参数二：权限的数组；参数三：请求码
+                    ActivityCompat.requestPermissions(Bottom_main.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET,Manifest.permission.CAMERA},1);
+                }
+            }
+        }
         bottom_navigation_bar=findViewById(R.id.bottom_navigation_bar);
         bottom_navigation_bar.setMode(BottomNavigationBar.MODE_SHIFTING)
 

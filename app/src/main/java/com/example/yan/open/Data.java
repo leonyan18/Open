@@ -5,7 +5,7 @@ package com.example.yan.open;
  */
 
 public class Data {
-    private static String address="http://192.168.0.122:8080";
+    private static String address="http://120.79.181.75:8080/spring";
     public static String getAddress(){
         return address;
     }

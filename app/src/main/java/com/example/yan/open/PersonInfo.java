@@ -104,10 +104,10 @@ public class PersonInfo extends AppCompatActivity {
                         .readTimeout(20, TimeUnit.SECONDS)
                         .build();  //创建OkHttpClient对象。
                 File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
-                File file = new File(appDir,"temp.jpg");
+                File file = new File(appDir,id.toString()+".jpg");
                 RequestBody  body = new MultipartBody.Builder("AaB03x")
                         .setType(MultipartBody.FORM)
-                        .addPart(Headers.of("Content-Disposition", "form-data; name=\"image\"; filename=\""+name.getText()+".jpg\""),
+                        .addPart(Headers.of("Content-Disposition", "form-data; name=\"image\"; filename=\""+id+".jpg\""),
                                         RequestBody.create(MediaType.parse("image/jpg"),file))
                         .addFormDataPart("methodId",methodId)
                         .addFormDataPart("tel", phone.getText().toString())
@@ -156,6 +156,7 @@ public class PersonInfo extends AppCompatActivity {
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
                         final String message=response.body().string();
+
                         String cz=null;
                         String id=null;
                         JSONObject json=null;
@@ -167,6 +168,7 @@ public class PersonInfo extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+
                         if(message.equals("更新成功")){
                             setResult(-1);
 
@@ -180,7 +182,7 @@ public class PersonInfo extends AppCompatActivity {
                             });
                             finish();
                         }
-                        else if(cz.equals("success")){
+                        else if(cz!=null&&cz.equals("success")){
                             final String yid=id;
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -232,19 +234,6 @@ public class PersonInfo extends AppCompatActivity {
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
         builder.detectFileUriExposure();
-        if(Build.VERSION.SDK_INT>=23){
-            //判断是否有这个权限
-            if(ContextCompat.checkSelfPermission(PersonInfo.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED||ContextCompat.checkSelfPermission(PersonInfo.this, Manifest.permission.INTERNET)!=PackageManager.PERMISSION_GRANTED){
-                //第一请求权限被取消显示的判断，一般可以不写
-                if (ActivityCompat.shouldShowRequestPermissionRationale(PersonInfo.this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)&&ActivityCompat.shouldShowRequestPermissionRationale(PersonInfo.this,
-                        Manifest.permission.INTERNET)){
-                }else {
-                    //2、申请权限: 参数二：权限的数组；参数三：请求码
-                    ActivityCompat.requestPermissions(PersonInfo.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.INTERNET,Manifest.permission.CAMERA},1);
-                }
-            }
-        }
         Toolbar toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(" ");
@@ -356,6 +345,7 @@ public class PersonInfo extends AppCompatActivity {
             goodpic=true;
             person = DataSupport.where("username = ?", data).findFirst(Person.class);
             dbutton.setText(person.getEnddate());
+            id=person.getUserid();
             if(person.getEnddate().equals("9999-12-31")){
                 checkBox2S.setChecked(false);
                 checkBox1L.setChecked(true);
@@ -369,19 +359,6 @@ public class PersonInfo extends AppCompatActivity {
             phone.setText(person.getTel());
             password.setText(person.getPassword());
             Log.d("image", "onCreate: "+Data.getAddress()+"/images/"+person.getUserid()+".jpg");
-            File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
-            if (!appDir.exists()) {
-                appDir.mkdir();
-            }
-            outputimage = new File(appDir,name.getText()+".jpg");
-            if(outputimage.exists()){
-                outputimage.delete();
-            }
-            try {
-                outputimage.createNewFile();
-            }catch (IOException e){
-                e.printStackTrace();
-            }
             if(person.getUsername().equals("mark")){
                 imageView.setImageResource(R.drawable.people1);
             }
@@ -398,11 +375,14 @@ public class PersonInfo extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        getUrlImage(Data.getAddress()+"/images/"+person.getUserid()+".jpg");
+                        imageView.setImageBitmap(BitmapFactory.decodeFile((Environment.getExternalStorageDirectory()+"/FaceOpen/"+person.getUserid()+".jpg")));
                     }
                 }).start();
             }
 
+        }
+        else {
+            id="temp";
         }
     }
     private static boolean isMobile(String number) {
@@ -421,7 +401,7 @@ public class PersonInfo extends AppCompatActivity {
             if (!appDir.exists()) {
                 appDir.mkdir();
             }
-            outputimage = new File(appDir, name.getText() + ".jpg");
+            outputimage = new File(appDir,  "temp.jpg");
             if (outputimage.exists()) {
                 outputimage.delete();
             }
@@ -453,7 +433,7 @@ public class PersonInfo extends AppCompatActivity {
             if (!appDir.exists()) {
                 appDir.mkdir();
             }
-            outputimage = new File(appDir,name.getText()+".jpg");
+            outputimage = new File(appDir,"temp.jpg");
             if(outputimage.exists()){
                 outputimage.delete();
             }
@@ -538,7 +518,7 @@ public class PersonInfo extends AppCompatActivity {
         switch (requestCode){
             case take_photo:
                 if(resultCode==RESULT_OK){
-                        Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name.getText()+".jpg"),getSmallBitmap(outputimage,800,400));
+                        Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+id+".jpg"),getSmallBitmap(outputimage,800,400));
                         imageView.setImageBitmap(newbitmap);
                         compressImage(newbitmap);
                         goodpic=true;
@@ -574,7 +554,7 @@ public class PersonInfo extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+name.getText()+".jpg"),getSmallBitmap(outputimage,800,400));
+            Bitmap newbitmap=rotaingImageView(readPictureDegree(Environment.getExternalStorageDirectory()+"/FaceOpen/"+id+".jpg"),getSmallBitmap(outputimage,800,400));
             compressImage(newbitmap);
             goodpic=true;
         }

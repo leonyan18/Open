@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -25,6 +26,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.litepal.crud.DataSupport;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -249,13 +253,22 @@ public class PersonWindow extends Fragment {
 //                    values.put("username",peoname);
 //                    DataSupport.updateAll(Person.class, values, "userid = ?", id);
                 }
-
                 SharedPreferencesUtils.saveData(MyApplication.getContext(),peoname,id);
+                File appDir = new File(Environment.getExternalStorageDirectory(), "FaceOpen");
+                if (!appDir.exists()) {
+                  appDir.mkdir();
+                }
+                File outputimage = new File(appDir,id+".jpg");
+                Log.d("outputimage", "pareseJsonchange: "+outputimage.getPath());
+                if(outputimage.exists()){
+                    outputimage.delete();
+                }
+                getUrlImage(Data.getAddress()+"/images/"+id+".jpg",outputimage);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
-    public Bitmap getUrlImage(String url) {
+    public Bitmap getUrlImage(String url,File file) {
         Bitmap img=null;
         try {
             URL picurl = new URL(url);
@@ -267,10 +280,35 @@ public class PersonWindow extends Fragment {
             conn.connect();
             InputStream is = conn.getInputStream();//获得图片的数据流
             img = BitmapFactory.decodeStream(is);
+            compressImage(img,file);
             is.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return img;
+    }
+    private Bitmap compressImage(Bitmap image, File outputimage) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.JPEG, 100, baos);//质量压缩方法，这里100表示不压缩，把压缩后的数据存放到baos中
+            int options = 100;
+            while (baos.toByteArray().length / 1024 > 100) {    //循环判断如果压缩后图片是否大于100kb,大于继续压缩
+                baos.reset();//重置baos即清空baos
+                if(options>10)
+                    options -= 10;//每次都减少10
+                else
+                    options--;
+                image.compress(Bitmap.CompressFormat.JPEG, options, baos);//这里压缩options%，把压缩后的数据存放到baos中
+            }
+            //压缩好后写入文件中
+            FileOutputStream fos = new FileOutputStream(outputimage);
+            fos.write(baos.toByteArray());
+            fos.flush();
+            fos.close();
+            return image;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
